@@ -1,0 +1,58 @@
+# Local configuration and secrets
+.env
+.env.*
+.env.local
+!.env.example
+*.env
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+coverage/
+.vite/
+
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Supabase and local tooling
+.supabase/
+.superpowers/
+supabase/.temp/
+
+# ML data and models
+ml/dataset/raw/
+ml/dataset/processed/
+ml/dataset/splits/
+# Pre-trained production models are tracked so the app works immediately
+!ml/models/*.joblib
+!ml/models/*.yaml
+ml/reports/*.png
+
+# Logs and runtime artifacts
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+labs/threatsentry.txt
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+

@@ -1,0 +1,61 @@
+{
+  "model_version": "web_ids_model_v1.0.0",
+  "test_sample_count": 273,
+  "accuracy": 1.0,
+  "macro_f1": 1.0,
+  "macro_precision": 1.0,
+  "macro_recall": 1.0,
+  "false_positive_rates": {
+    "normal_misclassified_as_sqli": 0.0,
+    "normal_misclassified_as_xss": 0.0
+  },
+  "classes": [
+    "NORMAL",
+    "SQLI",
+    "XSS"
+  ],
+  "confusion_matrix": {
+    "labels": [
+      "NORMAL",
+      "SQLI",
+      "XSS"
+    ],
+    "matrix": [
+      [
+        83,
+        0,
+        0
+      ],
+      [
+        0,
+        77,
+        0
+      ],
+      [
+        0,
+        0,
+        113
+      ]
+    ]
+  },
+  "per_class": {
+    "NORMAL": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 83.0
+    },
+    "SQLI": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 77.0
+    },
+    "XSS": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 113.0
+    }
+  }
+}

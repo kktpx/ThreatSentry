@@ -1,0 +1,15 @@
+{
+  "name": "threatsentry",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --names api,web --prefix-colors blue,magenta \".\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --port 8000\" \"npm --prefix apps/dashboard run dev\"",
+    "dev:api": ".\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --port 8000",
+    "dev:web": "npm --prefix apps/dashboard run dev",
+    "lab": ".\\.venv\\Scripts\\python.exe -m uvicorn labs.vulnerable_app:app --reload --port 8080",
+    "dev:all": "concurrently --kill-others-on-fail --names api,web,lab --prefix-colors blue,magenta,green \".\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload --port 8000\" \"npm --prefix apps/dashboard run dev\" \".\\.venv\\Scripts\\python.exe -m uvicorn labs.vulnerable_app:app --reload --port 8080\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

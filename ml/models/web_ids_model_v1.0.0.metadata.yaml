@@ -1,0 +1,42 @@
+algorithm: LogisticRegression
+candidate_comparison:
+  CalibratedLinearSVC: 1.0
+  LogisticRegression: 1.0
+  SGDClassifier_ModifiedHuber: 1.0
+classes:
+- NORMAL
+- SQLI
+- XSS
+feature_extractor: TfidfVectorizer(analyzer=char, ngram_range=(2, 5), min_df=2, sublinear_tf=True)
+model_version: v1.0.0
+train_samples: 1312
+val_samples: 268
+validation_metrics:
+  classification_report:
+    NORMAL:
+      f1-score: 1.0
+      precision: 1.0
+      recall: 1.0
+      support: 100.0
+    SQLI:
+      f1-score: 1.0
+      precision: 1.0
+      recall: 1.0
+      support: 87.0
+    XSS:
+      f1-score: 1.0
+      precision: 1.0
+      recall: 1.0
+      support: 81.0
+    accuracy: 1.0
+    macro avg:
+      f1-score: 1.0
+      precision: 1.0
+      recall: 1.0
+      support: 268.0
+    weighted avg:
+      f1-score: 1.0
+      precision: 1.0
+      recall: 1.0
+      support: 268.0
+  macro_f1: 1.0

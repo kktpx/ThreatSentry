@@ -1,0 +1,26 @@
+{
+  "navbar": {
+    "dashboard": "แดชบอร์ด",
+    "addWebsite": "เพิ่มเว็บไซต์",
+    "mlIntelligence": "วิเคราะห์ด้วย ML",
+    "signOut": "ออกจากระบบ"
+  },
+  "dashboard": {
+    "title": "แดชบอร์ดความปลอดภัย",
+    "monitoredWebsites": "เว็บไซต์ที่ตรวจสอบ",
+    "addNewTarget": "เพิ่มเป้าหมายใหม่",
+    "noWebsitesTitle": "ไม่มีเว็บไซต์ที่ตรวจสอบ",
+    "noWebsitesDesc": "เพิ่มเว็บไซต์แรกของคุณเพื่อเริ่มต้นการสแกนความปลอดภัยเชิงลึก",
+    "addFirstWebsite": "เพิ่มเว็บไซต์แรก"
+  },
+  "common": {
+    "loading": "กำลังโหลด...",
+    "error": "ข้อผิดพลาด",
+    "cancel": "ยกเลิก",
+    "save": "บันทึก"
+  },
+  "lang": {
+    "th": "ไทย",
+    "en": "Eng"
+  }
+}

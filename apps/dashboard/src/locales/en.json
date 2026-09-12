@@ -1,0 +1,26 @@
+{
+  "navbar": {
+    "dashboard": "Dashboard",
+    "addWebsite": "Add Website",
+    "mlIntelligence": "ML Intelligence",
+    "signOut": "Sign out"
+  },
+  "dashboard": {
+    "title": "Security Dashboard",
+    "monitoredWebsites": "Monitored Websites",
+    "addNewTarget": "Add New Target",
+    "noWebsitesTitle": "No websites monitored",
+    "noWebsitesDesc": "Add your first website to start deep security scanning.",
+    "addFirstWebsite": "Add First Website"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "lang": {
+    "th": "ไทย",
+    "en": "Eng"
+  }
+}

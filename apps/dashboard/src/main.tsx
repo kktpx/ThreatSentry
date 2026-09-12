@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import { AuthProvider } from './features/auth/authState'
 import './styles.css'
+import './lib/i18n'
 
 const rootElement = document.getElementById('root')
 

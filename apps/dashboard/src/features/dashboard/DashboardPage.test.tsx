@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
 
+import { MemoryRouter } from 'react-router'
 import { DashboardPage } from './DashboardPage'
 
 const { listWebsites } = vi.hoisted(() => ({ listWebsites: vi.fn() }))
@@ -13,9 +14,9 @@ it('renders the authenticated user websites', async () => {
     { id: 'site-1', name: 'Example Store', normalized_origin: 'https://example.com', verification_status: 'VERIFIED', last_score: 92 },
   ])
 
-  render(<DashboardPage />)
+  render(<MemoryRouter><DashboardPage /></MemoryRouter>)
 
   expect(await screen.findByText('Example Store')).toBeInTheDocument()
   expect(screen.getByText('VERIFIED')).toBeInTheDocument()
-  expect(screen.getByText('92 / 100')).toBeInTheDocument()
+  expect(screen.getAllByText('92', { exact: false })[0]).toBeInTheDocument()
 })

@@ -1,25 +1,59 @@
-import { FormEvent, useState } from 'react'
-import { Link } from 'react-router'
-import { Shield, Globe, ArrowLeft, CheckCircle2, AlertTriangle, Key } from 'lucide-react'
-
+import { FormEvent, useState, useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router'
+import { CheckCircle2, AlertTriangle, Key, ArrowRight, Copy } from 'lucide-react'
 import { createWebsite, verifyWebsite } from '../../lib/api'
+import { Button } from '../../components/ui/Button'
+import { SectionHeader } from '../../components/ui/SectionHeader'
 
 export function AddWebsitePage() {
+  const [searchParams] = useSearchParams()
+  const urlParam = searchParams.get('url')
+  
+  const [name, setName] = useState('')
+  const [url, setUrl] = useState('')
   const [token, setToken] = useState<string | null>(null)
   const [websiteId, setWebsiteId] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
+  const [isVerified, setIsVerified] = useState(false)
+
+  // Step logic
+  let step = 1;
+  if (isVerified) step = 3;
+  else if (token) step = 2;
+
+  useEffect(() => {
+    // 1. Try URL param
+    if (urlParam) {
+      setUrl(urlParam)
+      try {
+        const urlObj = new URL(urlParam)
+        setName(urlObj.hostname)
+      } catch {
+        // Ignore invalid URL parsing for name guess
+      }
+    } else {
+      // 2. Try session storage
+      const pendingUrl = sessionStorage.getItem('threatsentry_pending_target')
+      if (pendingUrl) {
+        setUrl(pendingUrl)
+        try {
+          const urlObj = new URL(pendingUrl)
+          setName(urlObj.hostname)
+        } catch {
+          // Ignore
+        }
+        sessionStorage.removeItem('threatsentry_pending_target')
+      }
+    }
+  }, [urlParam])
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setIsAdding(true)
-    const form = new FormData(event.currentTarget)
     try {
-      const website = await createWebsite({
-        name: String(form.get('name') ?? ''),
-        url: String(form.get('url') ?? ''),
-      })
+      const website = await createWebsite({ name, url })
       setToken(website.verification_token)
       setWebsiteId(website.id)
       setMessage(null)
@@ -35,11 +69,12 @@ export function AddWebsitePage() {
     setIsVerifying(true)
     try {
       const website = await verifyWebsite(websiteId)
-      setMessage(
-        website.verification_status === 'VERIFIED'
-          ? 'Ownership verified. You can now start a scan.'
-          : 'Verification failed. Check the file path and content, then try again.'
-      )
+      if (website.verification_status === 'VERIFIED') {
+        setIsVerified(true)
+        setMessage(null)
+      } else {
+        setMessage('Verification failed. Check the file path and content, then try again.')
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Unable to verify ownership.')
     } finally {
@@ -47,107 +82,172 @@ export function AddWebsitePage() {
     }
   }
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).catch(() => {});
+  }
+
   return (
-    <main className="app-shell">
-      <div className="w-full max-w-2xl">
-        <header className="mb-6">
-          <p className="eyebrow">ASSET ONBOARDING</p>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white mt-1">Add website</h1>
-          <p className="subtitle text-sm text-slate-400 mt-1">
-            Only add websites you own or are explicitly authorized to assess.
-          </p>
-        </header>
+    <main className="app-container min-h-screen">
+      <div className="w-full max-w-3xl mx-auto pt-8">
+        <SectionHeader 
+          eyebrow="ASSET ONBOARDING"
+          title="Add new target"
+          description="Only add websites you own or are explicitly authorized to assess."
+        />
+
+        {/* Step Indicator */}
+        <div className="flex items-center gap-2 sm:gap-4 mb-10 font-mono text-sm overflow-x-auto pb-2">
+          <div className={`flex items-center gap-2 whitespace-nowrap ${step >= 1 ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}>
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 1 ? 'bg-[var(--accent)] text-[var(--bg)]' : 'bg-[var(--surface-2)] border border-[var(--border)]'}`}>1</span>
+            Target
+          </div>
+          <div className="h-px bg-[var(--border)] flex-1 min-w-[20px]"></div>
+          <div className={`flex items-center gap-2 whitespace-nowrap ${step >= 2 ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}>
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 2 ? 'bg-[var(--warning)] text-[var(--bg)]' : step > 2 ? 'bg-[var(--success)] text-[var(--bg)]' : 'bg-[var(--surface-2)] border border-[var(--border)]'}`}>
+              {step > 2 ? <CheckCircle2 className="w-3.5 h-3.5" /> : '2'}
+            </span>
+            Verify
+          </div>
+          <div className="h-px bg-[var(--border)] flex-1 min-w-[20px]"></div>
+          <div className={`flex items-center gap-2 whitespace-nowrap ${step >= 3 ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}>
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 3 ? 'bg-[var(--accent)] text-[var(--bg)]' : 'bg-[var(--surface-2)] border border-[var(--border)]'}`}>3</span>
+            Scan
+          </div>
+        </div>
 
         <div className="space-y-6">
-          <form className="glass-card p-6 sm:p-8 space-y-4" onSubmit={submit}>
-            <div>
-              <label htmlFor="name" className="block text-xs font-semibold uppercase text-slate-300 mb-1.5">
-                Website name
-              </label>
-              <input
-                id="name"
-                name="name"
-                required
-                maxLength={120}
-                placeholder="My Production Store"
-                className="w-full bg-[#040810] border border-[#1c2b42] focus:border-cyan-500 rounded-lg p-3 text-sm text-white outline-none transition-colors"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="url" className="block text-xs font-semibold uppercase text-slate-300 mb-1.5">
-                Website URL
-              </label>
-              <input
-                id="url"
-                name="url"
-                type="url"
-                placeholder="https://example.com"
-                required
-                className="w-full bg-[#040810] border border-[#1c2b42] focus:border-cyan-500 rounded-lg p-3 text-sm text-white font-mono outline-none transition-colors"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isAdding}
-              className="w-full py-3 px-4 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/20 transition-all cursor-pointer mt-2"
-            >
-              {isAdding ? 'Adding website...' : 'Add website'}
-            </button>
-          </form>
-
-          {token && (
-            <section className="glass-card p-6 sm:p-8 space-y-4 border-amber-500/40 bg-amber-950/10">
-              <div className="flex items-center gap-2 text-amber-400">
-                <Key className="w-5 h-5" />
-                <h2 className="text-lg font-bold text-white">Verify ownership</h2>
+          {step === 1 && (
+            <form className="glass-card p-6 sm:p-8 space-y-5 animate-in fade-in" onSubmit={submit}>
+              <div>
+                <label htmlFor="name" className="block text-xs font-semibold uppercase text-[var(--text-secondary)] mb-1.5">
+                  Website Name
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  maxLength={120}
+                  placeholder="My Production Store"
+                  className="w-full bg-[var(--surface-2)] border border-[var(--border)] focus:border-[var(--accent)] rounded-lg p-3 text-sm text-[var(--text)] outline-none transition-colors"
+                />
               </div>
-              <p className="text-xs text-slate-300">
-                To prevent unauthorized scanning, prove ownership by publishing the verification file:
+
+              <div>
+                <label htmlFor="url" className="block text-xs font-semibold uppercase text-[var(--text-secondary)] mb-1.5">
+                  Website URL
+                </label>
+                <input
+                  id="url"
+                  name="url"
+                  type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  required
+                  className="w-full bg-[var(--surface-2)] border border-[var(--border)] focus:border-[var(--accent)] rounded-lg p-3 text-sm text-[var(--text)] font-mono outline-none transition-colors"
+                />
+              </div>
+
+              <div className="pt-2">
+                <Button type="submit" variant="primary" disabled={isAdding} className="w-full">
+                  {isAdding ? 'Adding target...' : 'Continue to Verification'} &rarr;
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {step === 2 && token && (
+            <section className="glass-card p-6 sm:p-8 space-y-6 border-[var(--warning)]/40 bg-[var(--warning)]/5 animate-in fade-in">
+              <div className="flex items-center gap-2 text-[var(--warning)]">
+                <Key className="w-5 h-5" />
+                <h2 className="text-lg font-bold text-[var(--text)]">Verify Ownership</h2>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                To prevent unauthorized scanning, prove ownership by publishing the verification file to your web server:
               </p>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <span className="text-[11px] font-semibold uppercase text-slate-400 block mb-1">
+                  <span className="text-[11px] font-semibold uppercase text-[var(--text-secondary)] block mb-1.5">
                     1. Create this file on your website:
                   </span>
-                  <div className="p-2.5 bg-[#040810] border border-[#1c2b42] rounded-lg font-mono text-xs text-cyan-300 break-all">
-                    <code>/.well-known/threatsentry.txt</code>
+                  <div className="flex items-center bg-[var(--surface)] border border-[var(--border)] rounded-lg overflow-hidden">
+                    <code className="p-3 text-sm text-[var(--accent)] font-mono flex-1 border-r border-[var(--border)]">
+                      /.well-known/threatsentry.txt
+                    </code>
+                    <button 
+                      type="button" 
+                      onClick={() => copyToClipboard('/.well-known/threatsentry.txt')}
+                      className="p-3 hover:bg-[var(--surface-2)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
+                      title="Copy filename"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-[11px] font-semibold uppercase text-slate-400 block mb-1">
+                  <span className="text-[11px] font-semibold uppercase text-[var(--text-secondary)] block mb-1.5">
                     2. With exactly this content:
                   </span>
-                  <div className="p-2.5 bg-[#040810] border border-[#1c2b42] rounded-lg font-mono text-xs text-amber-300 break-all">
-                    <code>{`threatsentry-verification=${token}`}</code>
+                  <div className="flex items-center bg-[var(--surface)] border border-[var(--border)] rounded-lg overflow-hidden">
+                    <code className="p-3 text-sm text-[var(--warning)] font-mono flex-1 border-r border-[var(--border)]">
+                      threatsentry-verification={token}
+                    </code>
+                    <button 
+                      type="button" 
+                      onClick={() => copyToClipboard(`threatsentry-verification=${token}`)}
+                      className="p-3 hover:bg-[var(--surface-2)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
+                      title="Copy content"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => void verify()}
-                disabled={isVerifying}
-                className="w-full py-3 px-4 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
-              >
-                {isVerifying ? 'Verifying...' : 'Verify ownership'}
-              </button>
+              <div className="pt-2">
+                <Button type="button" variant="primary" onClick={() => void verify()} disabled={isVerifying} className="w-full">
+                  {isVerifying ? 'Verifying...' : 'Verify Ownership'}
+                </Button>
+              </div>
             </section>
+          )}
+
+          {step === 3 && websiteId && (
+            <div className="glass-card p-10 text-center border-[var(--success)]/40 bg-[var(--success)]/5 animate-in zoom-in-95">
+              <div className="w-16 h-16 bg-[var(--success)]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 className="w-8 h-8 text-[var(--success)]" />
+              </div>
+              <h2 className="text-2xl font-bold text-[var(--text)] mb-2">Target Verified</h2>
+              <p className="text-[var(--text-secondary)] mb-8 max-w-md mx-auto">
+                Ownership of {name} has been confirmed. You can now perform deep security assessments.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button asChild to={`/websites/${websiteId}`} variant="primary">
+                  Open Target Dashboard
+                </Button>
+                <Button asChild to="/dashboard" variant="secondary">
+                  Back to Overview
+                </Button>
+              </div>
+            </div>
           )}
 
           {message && (
             <div
               role="alert"
-              className={`p-4 rounded-lg text-sm font-medium border ${
+              className={`p-4 rounded-lg text-sm font-medium border flex items-start gap-3 ${
                 message.includes('verified')
                   ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300'
                   : 'bg-rose-950/40 border-rose-800 text-rose-300'
               }`}
             >
-              {message}
+              <AlertTriangle className="w-5 h-5 shrink-0" />
+              <span>{message}</span>
             </div>
           )}
         </div>

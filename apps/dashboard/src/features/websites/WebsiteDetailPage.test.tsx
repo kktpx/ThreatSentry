@@ -57,11 +57,14 @@ describe('WebsiteDetailPage', () => {
       </MemoryRouter>
     )
 
-    expect(await screen.findByText('Secure Portal')).toBeInTheDocument()
+    expect((await screen.findAllByText('Secure Portal'))[0]).toBeInTheDocument()
     expect(screen.getByText('https://secure.example.com')).toBeInTheDocument()
-    expect(screen.getByText('VERIFIED')).toBeInTheDocument()
-    expect(screen.getAllByText('95 / 100').length).toBe(2)
-    expect(screen.getByRole('button', { name: /start deep scan/i })).toBeInTheDocument()
+    expect(screen.getAllByText(/Verified/i)[0]).toBeInTheDocument()
+    expect(screen.getAllByText('95', { exact: false }).length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: /start scan/i })).toBeInTheDocument()
+    
+    const historyTab = screen.getByRole('button', { name: /History/i })
+    await userEvent.setup().click(historyTab)
     expect(screen.getByText(/COMPLETED/)).toBeInTheDocument()
   })
 
@@ -83,8 +86,8 @@ describe('WebsiteDetailPage', () => {
       </MemoryRouter>
     )
 
-    expect(await screen.findByText('Unverified Site')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /start deep scan/i })).not.toBeInTheDocument()
+    expect((await screen.findAllByText('Unverified Site'))[0]).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /start scan/i })).not.toBeInTheDocument()
     expect(screen.getByText(/Ownership Verification Required/i)).toBeInTheDocument()
   })
 
@@ -125,17 +128,21 @@ describe('WebsiteDetailPage', () => {
       </MemoryRouter>
     )
 
-    const startBtn = await screen.findByRole('button', { name: /start deep scan/i })
+    const startBtn = await screen.findByRole('button', { name: /start scan/i })
     await user.click(startBtn)
 
     expect(startScan).toHaveBeenCalledWith('site-1')
-    expect(await screen.findByText(/ACTIVE SCAN IN PROGRESS/i)).toBeInTheDocument()
+    expect(await screen.findByText(/SCAN IN PROGRESS/i)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: /Stage: CRAWLING/i })).toBeInTheDocument()
 
-    const cancelBtn = screen.getByRole('button', { name: /cancel scan/i })
+    const cancelBtn = screen.getByRole('button', { name: /cancel/i })
     await user.click(cancelBtn)
 
     expect(cancelScan).toHaveBeenCalledWith('scan-new')
+    
+    const historyTab = screen.getByRole('button', { name: /History/i })
+    await user.click(historyTab)
+    
     await waitFor(() => {
       expect(screen.getByText('CANCELLED')).toBeInTheDocument()
     })

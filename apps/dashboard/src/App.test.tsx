@@ -8,14 +8,14 @@ vi.mock('./features/auth/ProtectedRoute', () => ({
   ProtectedRoute: ({ children }: { children: ReactNode }) => children,
 }))
 
-vi.mock('./features/dashboard/DashboardPage', () => ({
-  DashboardPage: () => <p>Security operations console</p>,
+vi.mock('./features/landing/LandingPage', () => ({
+  LandingPage: () => <p>Public Landing Page</p>,
 }))
 
 describe('App', () => {
   it('renders the ThreatSentry application shell', () => {
     render(<App />)
 
-    expect(screen.getByText('Security operations console')).toBeInTheDocument()
+    expect(screen.getByText('Public Landing Page')).toBeInTheDocument()
   })
 })

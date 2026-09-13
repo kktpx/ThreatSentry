@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useEffect, useState } from 'react'
 import {
   Cpu,
@@ -56,6 +57,7 @@ interface PredictionResult {
 }
 
 export function ModelPage() {
+  const { t } = useTranslation()
   const [modelData, setModelData] = useState<ModelData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -144,7 +146,7 @@ export function ModelPage() {
         <SectionHeader 
           eyebrow="MACHINE LEARNING INTELLIGENCE"
           title="Hybrid Detection Engine & Model Artifacts"
-          description="ThreatSentry pairs deterministic protocol rules and HTTP response differential analysis with a character-level TF-IDF classifier trained on the OWASP Core Rule Set and CSIC 2010 benign traffic."
+          description="{t('model.description')}"
         />
 
         {/* Status Grid */}
@@ -186,7 +188,7 @@ export function ModelPage() {
                 Live Model Inference Playground
               </h2>
               <p className="text-sm text-[var(--text-secondary)] max-w-2xl">
-                Test the active classifier with real SQLi, XSS, or benign payloads to observe real-time probability distributions.
+                {t('model.playgroundDesc')}
               </p>
             </div>
             <div className="flex flex-wrap gap-2 text-xs">
@@ -232,7 +234,7 @@ export function ModelPage() {
               value={testPayload}
               onChange={(e) => setTestPayload(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handlePredict()}
-              placeholder="Enter web parameter or payload..."
+              placeholder={t('model.inputPlaceholder')}
               className="flex-1 bg-[var(--bg)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm font-mono text-[var(--text)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
             />
             <Button
@@ -260,7 +262,7 @@ export function ModelPage() {
                     ? 'bg-[var(--danger)]/10 text-[var(--danger)] border-[var(--danger)]/30'
                     : 'bg-[var(--warning)]/10 text-[var(--warning)] border-[var(--warning)]/30'
                 }`}>
-                  CLASSIFIED AS: {predictionResult.prediction}
+                  {t('model.classifiedAs')} {predictionResult.prediction}
                 </span>
               </div>
 
@@ -297,7 +299,7 @@ export function ModelPage() {
               Class: NORMAL
             </h3>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-              Benign application traffic, standard web queries, clean alphanumeric parameters, and everyday URL parameters.
+              {t('model.classNormalDesc')}
             </p>
           </div>
           <div className="glass-card p-5">
@@ -306,7 +308,7 @@ export function ModelPage() {
               Class: SQLI
             </h3>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-              Structured query injection variations including union-based probes, boolean differentials, comment truncations, and stacked queries.
+              {t('model.classSqliDesc')}
             </p>
           </div>
           <div className="glass-card p-5">
@@ -315,7 +317,7 @@ export function ModelPage() {
               Class: XSS
             </h3>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-              Cross-site scripting vector patterns, event handler injections, unencoded tag breaks, and javascript pseudoprotocol indicators.
+              {t('model.classXssDesc')}
             </p>
           </div>
         </div>
@@ -328,18 +330,18 @@ export function ModelPage() {
               Held-Out Test Set Performance (273 Samples)
             </h2>
             <p className="text-sm text-[var(--text-secondary)] mb-6">
-              Evaluated on strictly isolated test samples with zero structural group overlap to ensure zero data leakage.
+              {t('model.testPerformanceDesc')}
             </p>
 
             <div className="overflow-x-auto border border-[var(--border)] rounded-lg">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-xs uppercase tracking-wider text-[var(--text-muted)]">
                   <tr>
-                    <th className="p-4 font-semibold">Target Class</th>
-                    <th className="p-4 font-semibold">Precision</th>
-                    <th className="p-4 font-semibold">Recall</th>
-                    <th className="p-4 font-semibold">F1-Score</th>
-                    <th className="p-4 font-semibold">Test Support</th>
+                    <th className="p-4 font-semibold">{t('model.targetClass')}</th>
+                    <th className="p-4 font-semibold">{t('model.precision')}</th>
+                    <th className="p-4 font-semibold">{t('model.recall')}</th>
+                    <th className="p-4 font-semibold">{t('model.f1Score')}</th>
+                    <th className="p-4 font-semibold">{t('model.testSupport')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)] font-mono text-[var(--text)] text-xs">
@@ -370,44 +372,44 @@ export function ModelPage() {
             Decision Hierarchy & Safety Invariant
           </h2>
           <p className="text-sm text-[var(--text-secondary)] mb-6 leading-relaxed max-w-4xl">
-            In compliance with safety boundaries, ML classification operates as a supportive signal rather than an autonomous decision maker. The decision matrix below outlines how confidence levels are derived:
+            {t('model.decisionDesc')} 
           </p>
 
           <div className="overflow-x-auto border border-[var(--border)] rounded-lg">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-xs uppercase tracking-wider text-[var(--text-muted)]">
                 <tr>
-                  <th className="p-4 font-semibold">Response Evidence</th>
-                  <th className="p-4 font-semibold">Rule Match</th>
-                  <th className="p-4 font-semibold">ML Probability</th>
-                  <th className="p-4 font-semibold">Final Confidence</th>
-                  <th className="p-4 font-semibold">Method</th>
+                  <th className="p-4 font-semibold">{t('model.responseEvidence')}</th>
+                  <th className="p-4 font-semibold">{t('model.ruleMatch')}</th>
+                  <th className="p-4 font-semibold">{t('model.mlProbability')}</th>
+                  <th className="p-4 font-semibold">{t('model.finalConfidence')}</th>
+                  <th className="p-4 font-semibold">{t('model.method')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)] text-xs">
                 <tr className="hover:bg-[var(--surface-2)] transition-colors">
-                  <td className="p-4 font-medium text-[var(--success)]">Database error / Unencoded tag</td>
+                  <td className="p-4 font-medium text-[var(--success)]">{t('model.dbError')}</td>
                   <td className="p-4 text-[var(--text-secondary)]">Yes</td>
                   <td className="p-4 font-mono text-[var(--accent)]">&gt; 0.6</td>
                   <td className="p-4 font-bold text-[var(--danger)]">CONFIRMED</td>
                   <td className="p-4"><Badge variant="info">HYBRID</Badge></td>
                 </tr>
                 <tr className="hover:bg-[var(--surface-2)] transition-colors bg-[var(--surface-2)]/30">
-                  <td className="p-4 font-medium text-[var(--success)]">Database error / Unencoded tag</td>
+                  <td className="p-4 font-medium text-[var(--success)]">{t('model.dbError')}</td>
                   <td className="p-4 text-[var(--text-secondary)]">No / Unknown</td>
                   <td className="p-4 font-mono text-[var(--text-muted)]">Any</td>
                   <td className="p-4 font-bold text-[var(--danger)]">CONFIRMED</td>
                   <td className="p-4"><Badge variant="default">ACTIVE</Badge></td>
                 </tr>
                 <tr className="hover:bg-[var(--surface-2)] transition-colors">
-                  <td className="p-4 text-[var(--warning)]">Status 500 anomaly</td>
+                  <td className="p-4 text-[var(--warning)]">{t('model.status500')}</td>
                   <td className="p-4 text-[var(--text-secondary)]">Yes</td>
                   <td className="p-4 font-mono text-[var(--accent)]">&gt; 0.8</td>
                   <td className="p-4 font-bold text-[var(--warning)]">LIKELY</td>
                   <td className="p-4"><Badge variant="info">HYBRID</Badge></td>
                 </tr>
                 <tr className="hover:bg-[var(--surface-2)] transition-colors bg-[var(--surface-2)]/30">
-                  <td className="p-4 text-[var(--text-muted)]">No anomaly</td>
+                  <td className="p-4 text-[var(--text-muted)]">{t('model.noAnomaly')}</td>
                   <td className="p-4 text-[var(--text-secondary)]">No</td>
                   <td className="p-4 font-mono text-[var(--text-muted)]">&gt; 0.8</td>
                   <td className="p-4 font-medium text-[var(--text-muted)]">DISCARDED</td>
@@ -420,7 +422,7 @@ export function ModelPage() {
           <div className="mt-6 p-4 rounded-lg bg-[var(--warning)]/10 border border-[var(--warning)]/20 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-[var(--warning)] shrink-0 mt-0.5" />
             <div className="text-sm text-[var(--warning)] leading-relaxed">
-              <strong>Core Safety Rule:</strong> Machine learning predictions alone are mathematically barred from producing a <code className="bg-[var(--warning)]/20 px-1.5 py-0.5 rounded text-[var(--warning)] font-mono text-xs mx-1">CONFIRMED</code> vulnerability. Confirmation requires deterministic proof such as exposed database error structures or unencoded reflection contexts.
+              <strong>{t('model.coreSafetyRule')}</strong> Machine learning predictions alone are mathematically barred from producing a <code className="bg-[var(--warning)]/20 px-1.5 py-0.5 rounded text-[var(--warning)] font-mono text-xs mx-1">CONFIRMED</code> vulnerability. Confirmation requires deterministic proof such as exposed database error structures or unencoded reflection contexts.
             </div>
           </div>
         </div>

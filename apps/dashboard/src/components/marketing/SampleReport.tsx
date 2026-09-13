@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { ShieldAlert, Terminal, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, Terminal, CheckCircle2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+;
 import { SecurityScore } from '../ui/SecurityScore';
 import { SeverityBadge } from '../ui/SeverityBadge';
 
 export function SampleReport() {
+  const { t } = useTranslation()
   const [selectedDemo, setSelectedDemo] = useState(false);
 
   return (
@@ -29,7 +32,7 @@ export function SampleReport() {
       <div className="p-6 md:p-8 bg-[var(--bg)] flex flex-col md:flex-row gap-8 items-start">
         <div className="w-full md:w-64 shrink-0 flex flex-col gap-6">
           <div className="p-5 glass-card bg-[var(--surface)] text-center">
-            <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-2">Score</div>
+            <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-2">{t('websiteDetail.score')}</div>
             <SecurityScore score={74} size="lg" className="justify-center" />
           </div>
 
@@ -62,9 +65,9 @@ export function SampleReport() {
               <thead className="border-b border-[var(--border)] text-xs uppercase tracking-wider text-[var(--text-muted)]">
                 <tr>
                   <th className="p-4 font-semibold">Severity</th>
-                  <th className="p-4 font-semibold">Finding</th>
-                  <th className="p-4 font-semibold">Endpoint</th>
-                  <th className="p-4 font-semibold">Category</th>
+                  <th className="p-4 font-semibold">{t('websiteDetail.colFinding')}</th>
+                  <th className="p-4 font-semibold">{t('websiteDetail.colEndpoint')}</th>
+                  <th className="p-4 font-semibold">{t('websiteDetail.colCategory')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)] text-[var(--text-secondary)]">
@@ -140,3 +143,4 @@ export function SampleReport() {
     </div>
   );
 }
+

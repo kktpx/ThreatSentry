@@ -1,283 +1,307 @@
-import { FormEvent, useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router'
-import { CheckCircle2, AlertTriangle, Key, ArrowRight, Copy, ArrowLeft } from 'lucide-react'
+import { FormEvent, useState } from 'react'
+import { Link, useNavigate } from 'react-router'
+import { Shield, ChevronRight, Copy, CheckCircle2 } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
 import { createWebsite, verifyWebsite } from '../../lib/api'
-import { Button } from '../../components/ui/Button'
-import { SectionHeader } from '../../components/ui/SectionHeader'
 import { Navbar } from '../../components/Navbar'
+import { Button } from '../../components/ui/Button'
+import { useTranslation } from 'react-i18next'
 
 export function AddWebsitePage() {
-  const [searchParams] = useSearchParams()
-  const urlParam = searchParams.get('url')
-  
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
-  const [token, setToken] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [step, setStep] = useState<1 | 2 | 3>(1)
+  const [verificationToken, setVerificationToken] = useState<string | null>(null)
+  const [verifying, setVerifying] = useState(false)
   const [websiteId, setWebsiteId] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
-  const [isAdding, setIsAdding] = useState(false)
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [isVerified, setIsVerified] = useState(false)
+  const [copiedFile, setCopiedFile] = useState(false)
+  const [copiedContent, setCopiedContent] = useState(false)
+  const navigate = useNavigate()
+  const { t } = useTranslation()
 
-  // Step logic
-  let step = 1;
-  if (isVerified) step = 3;
-  else if (token) step = 2;
-
-  useEffect(() => {
-    // 1. Try URL param
-    if (urlParam) {
-      setUrl(urlParam)
-      try {
-        const urlObj = new URL(urlParam)
-        setName(urlObj.hostname)
-      } catch {
-        // Ignore invalid URL parsing for name guess
-      }
-    } else {
-      // 2. Try session storage
-      const pendingUrl = sessionStorage.getItem('threatsentry_pending_target')
-      if (pendingUrl) {
-        setUrl(pendingUrl)
-        try {
-          const urlObj = new URL(pendingUrl)
-          setName(urlObj.hostname)
-        } catch {
-          // Ignore
-        }
-        sessionStorage.removeItem('threatsentry_pending_target')
-      }
-    }
-  }, [urlParam])
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setIsAdding(true)
+  const copyToClipboard = async (text: string, isFile: boolean) => {
     try {
-      const website = await createWebsite({ name, url })
-      setToken(website.verification_token)
-      setWebsiteId(website.id)
-      setMessage(null)
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Unable to add website.')
-    } finally {
-      setIsAdding(false)
-    }
-  }
-
-  async function verify() {
-    if (!websiteId) return
-    setIsVerifying(true)
-    try {
-      const website = await verifyWebsite(websiteId)
-      if (website.verification_status === 'VERIFIED') {
-        setIsVerified(true)
-        setMessage(null)
+      await navigator.clipboard.writeText(text)
+      if (isFile) {
+        setCopiedFile(true)
+        setTimeout(() => setCopiedFile(false), 2000)
       } else {
-        setMessage('Verification failed. Check the file path and content, then try again.')
+        setCopiedContent(true)
+        setTimeout(() => setCopiedContent(false), 2000)
       }
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Unable to verify ownership.')
-    } finally {
-      setIsVerifying(false)
+    } catch (err) {
+      console.error('Failed to copy', err)
     }
   }
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).catch(() => {});
+  async function handleAdd(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('No session')
+
+      let cleanUrl = url.trim()
+      if (!cleanUrl.startsWith('http')) {
+        cleanUrl = 'https://' + cleanUrl
+      }
+      
+      const newSite = await createWebsite({
+        name: name.trim(),
+        url: cleanUrl
+      })
+      
+      setWebsiteId(newSite.id)
+      setVerificationToken(newSite.verification_token || null)
+      setStep(2)
+      
+    } catch (err: any) {
+      setError(err.message || t('addWebsite.errorAddWebsite'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleVerify() {
+    if (!websiteId) return
+    setVerifying(true)
+    setError(null)
+    try {
+      await verifyWebsite(websiteId)
+      setStep(3)
+    } catch (err: any) {
+      if (err.message?.includes('404') || err.message?.includes('match')) {
+        setError(t('addWebsite.errorVerifyFailed'))
+      } else {
+        setError(err.message || t('addWebsite.errorVerifyUnable'))
+      }
+    } finally {
+      setVerifying(false)
+    }
   }
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
       <Navbar />
-      <main className="app-container">
-        <div className="w-full max-w-3xl mx-auto pt-8">
-          <Link to="/dashboard" className="text-[var(--accent)] hover:underline mb-6 inline-flex items-center gap-1.5 text-sm font-medium">
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Dashboard</span>
-          </Link>
-          <SectionHeader 
-            eyebrow="ASSET ONBOARDING"
-            title="Add new target"
-            description="Only add websites you own or are explicitly authorized to assess."
-          />
 
-        {/* Step Indicator */}
-        <div className="flex items-center gap-2 sm:gap-4 mb-10 font-mono text-sm overflow-x-auto pb-2">
-          <div className={`flex items-center gap-2 whitespace-nowrap ${step >= 1 ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}>
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 1 ? 'bg-[var(--accent)] text-[var(--bg)]' : 'bg-[var(--surface-2)] border border-[var(--border)]'}`}>1</span>
-            Target
+      <main className="app-container pt-8 pb-20">
+        <div className="max-w-2xl mx-auto">
+          
+          {/* Breadcrumb */}
+          <div className="mb-6">
+            <Link to="/dashboard" className="text-sm font-semibold text-[var(--text-muted)] hover:text-[var(--text)] transition-colors no-underline">
+              ← {t('common.backToDashboard')}
+            </Link>
           </div>
-          <div className="h-px bg-[var(--border)] flex-1 min-w-[20px]"></div>
-          <div className={`flex items-center gap-2 whitespace-nowrap ${step >= 2 ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}>
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 2 ? 'bg-[var(--warning)] text-[var(--bg)]' : step > 2 ? 'bg-[var(--success)] text-[var(--bg)]' : 'bg-[var(--surface-2)] border border-[var(--border)]'}`}>
-              {step > 2 ? <CheckCircle2 className="w-3.5 h-3.5" /> : '2'}
-            </span>
-            Verify
-          </div>
-          <div className="h-px bg-[var(--border)] flex-1 min-w-[20px]"></div>
-          <div className={`flex items-center gap-2 whitespace-nowrap ${step >= 3 ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}`}>
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step === 3 ? 'bg-[var(--accent)] text-[var(--bg)]' : 'bg-[var(--surface-2)] border border-[var(--border)]'}`}>3</span>
-            Scan
-          </div>
-        </div>
 
-        <div className="space-y-6">
+          <div className="mb-8">
+            <h4 className="eyebrow mb-2">{t('addWebsite.eyebrow')}</h4>
+            <h1 className="text-3xl font-extrabold text-[var(--text)] tracking-tight mb-2">
+              {t('addWebsite.title')}
+            </h1>
+            <p className="text-[var(--text-secondary)]">
+              {t('addWebsite.description')}
+            </p>
+          </div>
+
+          {/* Progress Steps */}
+          <div className="flex items-center gap-2 mb-10 text-sm font-semibold">
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${step >= 1 ? 'bg-[var(--accent)] text-[var(--bg)]' : 'bg-[var(--surface-2)] text-[var(--text-muted)]'}`}>
+              <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">1</span>
+              {t('addWebsite.stepTarget')}
+            </div>
+            <ChevronRight className="w-4 h-4 text-[var(--border)]" />
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors duration-300 ${step >= 2 ? 'bg-[var(--accent)] text-[var(--bg)]' : 'bg-[var(--surface-2)] text-[var(--text-muted)]'}`}>
+              <span className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center text-xs">2</span>
+              {t('addWebsite.stepVerify')}
+            </div>
+            <ChevronRight className="w-4 h-4 text-[var(--border)]" />
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors duration-300 ${step === 3 ? 'bg-[var(--success)] text-[var(--bg)]' : 'bg-[var(--surface-2)] text-[var(--text-muted)]'}`}>
+              <span className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center text-xs">3</span>
+              {t('addWebsite.stepScan')}
+            </div>
+          </div>
+
+          {error && (
+            <div className="mb-6 p-4 rounded-lg bg-[var(--danger)]/10 border border-[var(--danger)]/20 flex items-start gap-3 animate-in slide-in-from-top-2">
+              <Shield className="w-5 h-5 text-[var(--danger)] shrink-0 mt-0.5" />
+              <div className="text-sm text-[var(--danger)]">
+                {error}
+              </div>
+            </div>
+          )}
+
           {step === 1 && (
-            <form className="glass-card p-6 sm:p-8 space-y-5 animate-in fade-in" onSubmit={submit}>
+            <form onSubmit={handleAdd} className="glass-card p-6 md:p-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div>
-                <label htmlFor="name" className="block text-xs font-semibold uppercase text-[var(--text-secondary)] mb-1.5">
-                  Website Name
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-2" htmlFor="name">
+                  {t('addWebsite.websiteName')}
                 </label>
                 <input
                   id="name"
-                  name="name"
+                  type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  maxLength={120}
-                  placeholder="My Production Store"
-                  className="w-full bg-[var(--surface-2)] border border-[var(--border)] focus:border-[var(--accent)] rounded-lg p-3 text-sm text-[var(--text)] outline-none transition-colors"
+                  placeholder={t('addWebsite.websiteNamePlaceholder')}
+                  className="w-full bg-[var(--surface-2)] border border-[var(--border)] focus:border-[var(--accent)] rounded-lg p-3.5 text-sm text-[var(--text)] outline-none transition-colors"
                 />
               </div>
-
+              
               <div>
-                <label htmlFor="url" className="block text-xs font-semibold uppercase text-[var(--text-secondary)] mb-1.5">
-                  Website URL
+                <label className="block text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)] mb-2" htmlFor="url">
+                  {t('addWebsite.websiteUrl')}
                 </label>
                 <input
                   id="url"
-                  name="url"
                   type="url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://example.com"
                   required
-                  className="w-full bg-[var(--surface-2)] border border-[var(--border)] focus:border-[var(--accent)] rounded-lg p-3 text-sm text-[var(--text)] font-mono outline-none transition-colors"
+                  placeholder={t('addWebsite.websiteUrlPlaceholder')}
+                  className="w-full bg-[var(--surface-2)] border border-[var(--border)] focus:border-[var(--accent)] rounded-lg p-3.5 text-sm text-[var(--text)] font-mono outline-none transition-colors"
                 />
               </div>
 
-              <div className="pt-2">
-                <Button type="submit" variant="primary" disabled={isAdding} className="w-full">
-                  {isAdding ? 'Adding target...' : 'Continue to Verification'} &rarr;
+              <div className="pt-4 border-t border-[var(--border)]">
+                <Button
+                  type="submit"
+                  disabled={loading || !name || !url}
+                  variant="primary"
+                  className="w-full justify-center py-3.5"
+                >
+                  {loading ? t('addWebsite.addingTarget') : t('addWebsite.continueToVerification')}
                 </Button>
               </div>
             </form>
           )}
 
-          {step === 2 && token && (
-            <section className="glass-card p-6 sm:p-8 space-y-6 border-[var(--warning)]/40 bg-[var(--warning)]/5 animate-in fade-in">
-              <div className="flex items-center gap-2 text-[var(--warning)]">
-                <Key className="w-5 h-5" />
-                <h2 className="text-lg font-bold text-[var(--text)]">Verify Ownership</h2>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                To prevent unauthorized scanning, prove ownership by publishing the verification file to your web server:
+          {step === 2 && verificationToken && (
+            <div className="glass-card p-6 md:p-8 animate-in fade-in slide-in-from-right-8 duration-500">
+              <h2 className="text-xl font-bold text-[var(--text)] mb-2 flex items-center gap-2">
+                <Shield className="w-5 h-5 text-[var(--accent)]" />
+                {t('addWebsite.verifyOwnership')}
+              </h2>
+              <p className="text-sm text-[var(--text-secondary)] mb-8 max-w-xl leading-relaxed">
+                {t('addWebsite.verifyDesc')}
               </p>
 
-              <div className="space-y-4">
+              <div className="space-y-8">
+                {/* Step 1 */}
                 <div>
-                  <span className="text-[11px] font-semibold uppercase text-[var(--text-secondary)] block mb-1.5">
-                    1. Create this file on your website:
-                  </span>
-                  <div className="flex items-center bg-[var(--surface)] border border-[var(--border)] rounded-lg overflow-hidden">
-                    <code className="p-3 text-sm text-[var(--accent)] font-mono flex-1 border-r border-[var(--border)]">
+                  <h3 className="text-sm font-bold text-[var(--text)] mb-3 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center text-xs text-[var(--text-muted)]">1</span>
+                    {t('addWebsite.createFile')}
+                  </h3>
+                  <div className="flex items-stretch gap-2 ml-8">
+                    <code className="flex-1 bg-[var(--surface-2)] border border-[var(--border)] p-3 rounded-lg text-sm font-mono text-[var(--accent)] overflow-x-auto">
                       /.well-known/threatsentry.txt
                     </code>
                     <button 
-                      type="button" 
-                      onClick={() => copyToClipboard('/.well-known/threatsentry.txt')}
-                      className="p-3 hover:bg-[var(--surface-2)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
-                      title="Copy filename"
+                      onClick={() => copyToClipboard('/.well-known/threatsentry.txt', true)}
+                      className="px-4 bg-[var(--surface-2)] hover:bg-[var(--border)] border border-[var(--border)] rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
+                      title={t('addWebsite.copyFilename')}
                     >
-                      <Copy className="w-4 h-4" />
+                      {copiedFile ? <CheckCircle2 className="w-4 h-4 text-[var(--success)]" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
-                  <p className="text-xs text-[var(--text-muted)] mt-2.5 leading-relaxed">
-                    <strong>Tip:</strong> Create a folder named <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">.well-known</code> in your web server's public root directory (e.g., <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">public/</code>, <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">htdocs/</code>, or <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">var/www/html/</code>). Then, create the <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">threatsentry.txt</code> file inside it.
+                  <p className="ml-8 mt-2 text-xs text-[var(--text-muted)] leading-relaxed">
+                    <strong>Tip:</strong> {t('addWebsite.folderTip')}
                   </p>
                 </div>
 
+                {/* Step 2 */}
                 <div>
-                  <span className="text-[11px] font-semibold uppercase text-[var(--text-secondary)] block mb-1.5">
-                    2. With exactly this content:
-                  </span>
-                  <div className="flex items-center bg-[var(--surface)] border border-[var(--border)] rounded-lg overflow-hidden">
-                    <code className="p-3 text-sm text-[var(--warning)] font-mono flex-1 border-r border-[var(--border)]">
-                      threatsentry-verification={token}
+                  <h3 className="text-sm font-bold text-[var(--text)] mb-3 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center text-xs text-[var(--text-muted)]">2</span>
+                    {t('addWebsite.withContent')}
+                  </h3>
+                  <div className="flex items-stretch gap-2 ml-8">
+                    <code className="flex-1 bg-[var(--surface-2)] border border-[var(--border)] p-3 rounded-lg text-sm font-mono text-[var(--text)] break-all">
+                      {verificationToken}
                     </code>
                     <button 
-                      type="button" 
-                      onClick={() => copyToClipboard(`threatsentry-verification=${token}`)}
-                      className="p-3 hover:bg-[var(--surface-2)] text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
-                      title="Copy content"
+                      onClick={() => copyToClipboard(verificationToken, false)}
+                      className="px-4 bg-[var(--surface-2)] hover:bg-[var(--border)] border border-[var(--border)] rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
+                      title={t('addWebsite.copyContent')}
                     >
-                      <Copy className="w-4 h-4" />
+                      {copiedContent ? <CheckCircle2 className="w-4 h-4 text-[var(--success)]" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
+                {/* Step 3 (Deploy) */}
                 <div>
-                  <span className="text-[11px] font-semibold uppercase text-[var(--text-secondary)] block mb-1.5">
-                    3. Deploy or Push to your server:
-                  </span>
-                  <div className="text-xs text-[var(--text-muted)] bg-[var(--surface-2)] p-3 rounded-lg border border-[var(--border)] leading-relaxed space-y-2">
-                    <p>If you are using Git (like Vercel, Netlify, GitHub Pages), commit and push the file:</p>
-                    <code className="block bg-[var(--bg)] p-2 rounded border border-[var(--border)] font-mono text-[11px] text-[var(--accent)]">
+                  <h3 className="text-sm font-bold text-[var(--text)] mb-3 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[var(--surface-2)] border border-[var(--border)] flex items-center justify-center text-xs text-[var(--text-muted)]">3</span>
+                    {t('addWebsite.deployStep')}
+                  </h3>
+                  <div className="ml-8 p-4 bg-[var(--surface-2)]/50 border border-[var(--border)] rounded-lg text-sm text-[var(--text-secondary)] leading-relaxed">
+                    <p className="mb-2">
+                      {t('addWebsite.deployDesc')}
+                    </p>
+                    <code className="block bg-[var(--bg)] p-2 rounded border border-[var(--border)] text-[var(--accent)] mb-3 font-mono text-xs">
                       git add public/.well-known/threatsentry.txt<br/>
                       git commit -m "Add verification file"<br/>
                       git push
                     </code>
-                    <p>Wait for your deployment to finish before clicking Verify Ownership.</p>
+                    <p className="text-[var(--warning)] font-medium text-xs flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[var(--warning)] animate-pulse" />
+                      {t('addWebsite.deployWait')}
+                    </p>
                   </div>
                 </div>
-              </div>
 
-              <div className="pt-2">
-                <Button type="button" variant="primary" onClick={() => void verify()} disabled={isVerifying} className="w-full">
-                  {isVerifying ? 'Verifying...' : 'Verify Ownership'}
-                </Button>
+                <div className="pt-6 border-t border-[var(--border)] flex gap-4 ml-8">
+                  <Button
+                    onClick={handleVerify}
+                    disabled={verifying}
+                    variant="primary"
+                    className="flex-1 justify-center py-3.5"
+                  >
+                    {verifying ? t('addWebsite.verifying') : t('addWebsite.verifyOwnership')}
+                  </Button>
+                </div>
               </div>
-            </section>
+            </div>
           )}
 
           {step === 3 && websiteId && (
-            <div className="glass-card p-10 text-center border-[var(--success)]/40 bg-[var(--success)]/5 animate-in zoom-in-95">
-              <div className="w-16 h-16 bg-[var(--success)]/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle2 className="w-8 h-8 text-[var(--success)]" />
+            <div className="glass-card p-10 text-center animate-in zoom-in-95 duration-500">
+              <div className="w-20 h-20 bg-[var(--success)]/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-[var(--success)]/20 shadow-[0_0_30px_rgba(var(--success-rgb),0.2)]">
+                <CheckCircle2 className="w-10 h-10 text-[var(--success)]" />
               </div>
-              <h2 className="text-2xl font-bold text-[var(--text)] mb-2">Target Verified</h2>
-              <p className="text-[var(--text-secondary)] mb-8 max-w-md mx-auto">
-                Ownership of {name} has been confirmed. You can now perform deep security assessments.
+              <h2 className="text-3xl font-extrabold text-[var(--text)] tracking-tight mb-3">
+                {t('addWebsite.targetVerified')}
+              </h2>
+              <p className="text-[var(--text-secondary)] mb-8 max-w-sm mx-auto leading-relaxed">
+                {t('addWebsite.targetVerifiedDesc', { name })}
               </p>
               
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button asChild to={`/websites/${websiteId}`} variant="primary">
-                  Open Target Dashboard
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  onClick={() => navigate(`/websites/${websiteId}`)}
+                  variant="primary"
+                  className="justify-center"
+                >
+                  {t('addWebsite.openTargetDashboard')}
                 </Button>
-                <Button asChild to="/dashboard" variant="secondary">
-                  Back to Overview
+                <Button 
+                  onClick={() => navigate('/dashboard')}
+                  variant="secondary"
+                  className="justify-center"
+                >
+                  {t('addWebsite.backToOverview')}
                 </Button>
               </div>
-            </div>
-          )}
-
-          {message && (
-            <div
-              role="alert"
-              className={`p-4 rounded-lg text-sm font-medium border flex items-start gap-3 ${
-                message.includes('verified')
-                  ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300'
-                  : 'bg-rose-950/40 border-rose-800 text-rose-300'
-              }`}
-            >
-              <AlertTriangle className="w-5 h-5 shrink-0" />
-              <span>{message}</span>
             </div>
           )}
         </div>
-      </div>
-    </main>
+      </main>
     </div>
   )
 }

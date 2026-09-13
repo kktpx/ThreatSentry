@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { MarketingNavbar } from '../../components/marketing/MarketingNavbar';
 import { HeroScanner } from '../../components/marketing/HeroScanner';
 import { MetricsStrip } from '../../components/marketing/MetricsStrip';
@@ -23,6 +24,7 @@ import {
 import { useAuth } from '../auth/authState';
 
 export function LandingPage() {
+  const { t } = useTranslation()
   let isAuthenticated = false;
   try {
     const { session } = useAuth();
@@ -39,13 +41,13 @@ export function LandingPage() {
       <main id="top" className="pt-32 pb-20 md:pt-40 md:pb-32 px-6 md:px-12 max-w-[1440px] mx-auto overflow-hidden">
         <div className="flex flex-col xl:flex-row items-center gap-16 xl:gap-24">
           <div className="flex-1 w-full max-w-2xl xl:max-w-none">
-            <p className="eyebrow mb-6">AUTHORIZED WEB SECURITY SCANNER</p>
+            <p className="eyebrow mb-6">{t('landing.heroEyebrow')}</p>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-[var(--text)] mb-8 leading-[1.1]">
               Detect web threats.<br />
-              <span className="text-[var(--text-secondary)]">Before they become breaches.</span>
+              <span className="text-[var(--text-secondary)]">{t('landing.heroTitle2')}</span>
             </h1>
             <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-10 max-w-xl leading-relaxed">
-              ThreatSentry combines automated web vulnerability scanning, scope-aware crawling and Machine Learning intrusion detection to identify SQL Injection, XSS, Path Traversal, security misconfigurations and suspicious web payloads.
+              {t('landing.heroDesc')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 mb-10">
@@ -85,7 +87,7 @@ export function LandingPage() {
         <SectionHeader 
           eyebrow="COVERAGE"
           title="Security analysis across your web attack surface."
-          description="ThreatSentry combines deterministic security checks, active verification and machine-learning analysis in a single workflow."
+          description="{t('landing.coverageDesc')}"
         />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -222,7 +224,7 @@ export function LandingPage() {
                   <div className="text-xl font-bold font-mono text-[var(--danger)]">SQLI</div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">Confidence</div>
+                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] mb-1">{t('websiteDetail.colConfidence')}</div>
                   <div className="text-xl font-bold font-mono text-[var(--text)]">94.8%</div>
                 </div>
               </div>

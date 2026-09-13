@@ -2,6 +2,8 @@ import { FormEvent, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router'
 import { Shield } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { useTranslation } from 'react-i18next'
+import { LanguageSwitcher } from '../../components/LanguageSwitcher'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -10,6 +12,7 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useTranslation()
 
   const from = location.state?.from || '/dashboard'
 
@@ -22,14 +25,17 @@ export function LoginPage() {
       if (authError) throw authError
       navigate(from, { replace: true })
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in')
+      setError(err.message || t('auth.failedSignIn'))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex bg-[var(--bg)]">
+    <div className="min-h-screen flex bg-[var(--bg)] relative">
+      <div className="absolute top-4 right-4 z-50">
+        <LanguageSwitcher />
+      </div>
       {/* Left side product statement - hidden on mobile */}
       <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 border-r border-[var(--border)] bg-[var(--surface-2)]">
         <Link to="/" className="flex items-center gap-2.5 text-inherit no-underline font-sans font-bold text-xl tracking-tight text-[var(--text)]">
@@ -39,15 +45,15 @@ export function LoginPage() {
         
         <div className="max-w-md">
           <h2 className="text-3xl font-extrabold text-[var(--text)] tracking-tight mb-4 leading-tight">
-            Advanced web vulnerability scanning made accessible.
+            {t('auth.loginTagline')}
           </h2>
           <p className="text-[var(--text-secondary)]">
-            Log in to manage your verified targets, monitor active scans, and review security findings.
+            {t('auth.loginDesc')}
           </p>
         </div>
 
         <div className="text-sm font-mono text-[var(--text-muted)]">
-          &copy; {new Date().getFullYear()} ThreatSentry Project
+          {t('common.copyright', { year: new Date().getFullYear() })}
         </div>
       </div>
 
@@ -61,15 +67,15 @@ export function LoginPage() {
             </Link>
           </div>
 
-          <h1 className="text-2xl font-bold text-[var(--text)] tracking-tight mb-2">Welcome back</h1>
+          <h1 className="text-2xl font-bold text-[var(--text)] tracking-tight mb-2">{t('auth.welcomeBack')}</h1>
           <p className="text-sm text-[var(--text-secondary)] mb-8">
-            Enter your credentials to access your account
+            {t('auth.enterCredentials')}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-semibold uppercase text-[var(--text-secondary)] mb-1.5" htmlFor="email">
-                Email
+                {t('auth.email')}
               </label>
               <input
                 id="email"
@@ -77,13 +83,13 @@ export function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 className="w-full bg-[var(--surface-2)] border border-[var(--border)] focus:border-[var(--accent)] rounded-lg p-3 text-sm text-[var(--text)] outline-none transition-colors"
               />
             </div>
             <div>
               <label className="block text-xs font-semibold uppercase text-[var(--text-secondary)] mb-1.5" htmlFor="password">
-                Password
+                {t('auth.password')}
               </label>
               <input
                 id="password"
@@ -107,14 +113,14 @@ export function LoginPage() {
               disabled={loading}
               className="w-full py-3 px-4 bg-[var(--text)] text-[var(--bg)] hover:bg-[var(--text-secondary)] rounded-lg font-semibold text-sm transition-colors cursor-pointer"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('auth.signingIn') : t('auth.signIn')}
             </button>
           </form>
 
           <p className="mt-8 text-center text-sm text-[var(--text-secondary)]">
-            Don't have an account?{' '}
+            {t('auth.noAccount')}{' '}
             <Link to="/register" className="font-semibold text-[var(--text)] hover:text-[var(--accent)] transition-colors no-underline">
-              Sign up
+              {t('auth.signUp')}
             </Link>
           </p>
         </div>

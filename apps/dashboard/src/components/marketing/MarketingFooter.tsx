@@ -1,6 +1,9 @@
-import { Shield } from 'lucide-react';
+import { Shield } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+;
 
 export function MarketingFooter() {
+  const { t } = useTranslation()
   return (
     <footer className="border-t border-[var(--border)] bg-[var(--surface)] py-16 px-6 md:px-12 mt-24">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
@@ -10,7 +13,7 @@ export function MarketingFooter() {
             <span className="font-bold text-lg text-[var(--text)] tracking-tight">ThreatSentry</span>
           </div>
           <p className="text-sm text-[var(--text-secondary)] max-w-xs">
-            Web Vulnerability Scanner & ML IDS.
+            {t('auth.loginTagline')}
           </p>
         </div>
 
@@ -42,8 +45,9 @@ export function MarketingFooter() {
 
       <div className="max-w-7xl mx-auto pt-8 border-t border-[var(--border)] flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
         <p>ThreatSentry — Built for security research, defensive testing and authorized assessments.</p>
-        <p>&copy; {new Date().getFullYear()} ThreatSentry Project</p>
+        <p>{t('common.copyright', { year: new Date().getFullYear() })}</p>
       </div>
     </footer>
   );
 }
+

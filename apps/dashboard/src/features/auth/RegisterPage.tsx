@@ -2,6 +2,8 @@ import { FormEvent, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { Shield } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { useTranslation } from 'react-i18next'
+import { LanguageSwitcher } from '../../components/LanguageSwitcher'
 
 export function RegisterPage() {
   const [email, setEmail] = useState('')
@@ -10,6 +12,7 @@ export function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { t } = useTranslation()
   
   const redirect = searchParams.get('redirect') || '/dashboard'
 
@@ -22,14 +25,17 @@ export function RegisterPage() {
       if (authError) throw authError
       navigate(redirect, { replace: true })
     } catch (err: any) {
-      setError(err.message || 'Failed to sign up')
+      setError(err.message || t('auth.failedSignUp'))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex bg-[var(--bg)]">
+    <div className="min-h-screen flex bg-[var(--bg)] relative">
+      <div className="absolute top-4 right-4 z-50">
+        <LanguageSwitcher />
+      </div>
       {/* Left side product statement - hidden on mobile */}
       <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 border-r border-[var(--border)] bg-[var(--surface-2)]">
         <Link to="/" className="flex items-center gap-2.5 text-inherit no-underline font-sans font-bold text-xl tracking-tight text-[var(--text)]">
@@ -39,15 +45,15 @@ export function RegisterPage() {
         
         <div className="max-w-md">
           <h2 className="text-3xl font-extrabold text-[var(--text)] tracking-tight mb-4 leading-tight">
-            Secure your web applications before deployment.
+            {t('auth.registerTagline')}
           </h2>
           <p className="text-[var(--text-secondary)]">
-            Create an account to start scanning authorized targets for vulnerabilities using deterministic engines and ML.
+            {t('auth.registerDesc')}
           </p>
         </div>
 
         <div className="text-sm font-mono text-[var(--text-muted)]">
-          &copy; {new Date().getFullYear()} ThreatSentry Project
+          {t('common.copyright', { year: new Date().getFullYear() })}
         </div>
       </div>
 
@@ -61,15 +67,15 @@ export function RegisterPage() {
             </Link>
           </div>
 
-          <h1 className="text-2xl font-bold text-[var(--text)] tracking-tight mb-2">Create an account</h1>
+          <h1 className="text-2xl font-bold text-[var(--text)] tracking-tight mb-2">{t('auth.createAccount')}</h1>
           <p className="text-sm text-[var(--text-secondary)] mb-8">
-            Enter your details to get started
+            {t('auth.enterDetails')}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-semibold uppercase text-[var(--text-secondary)] mb-1.5" htmlFor="email">
-                Email
+                {t('auth.email')}
               </label>
               <input
                 id="email"
@@ -77,13 +83,13 @@ export function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 className="w-full bg-[var(--surface-2)] border border-[var(--border)] focus:border-[var(--accent)] rounded-lg p-3 text-sm text-[var(--text)] outline-none transition-colors"
               />
             </div>
             <div>
               <label className="block text-xs font-semibold uppercase text-[var(--text-secondary)] mb-1.5" htmlFor="password">
-                Password
+                {t('auth.password')}
               </label>
               <input
                 id="password"
@@ -108,14 +114,14 @@ export function RegisterPage() {
               disabled={loading}
               className="w-full py-3 px-4 bg-[var(--text)] text-[var(--bg)] hover:bg-[var(--text-secondary)] rounded-lg font-semibold text-sm transition-colors cursor-pointer"
             >
-              {loading ? 'Creating account...' : 'Sign Up'}
+              {loading ? t('auth.creatingAccount') : t('auth.signUp')}
             </button>
           </form>
 
           <p className="mt-8 text-center text-sm text-[var(--text-secondary)]">
-            Already have an account?{' '}
+            {t('auth.haveAccount')}{' '}
             <Link to="/login" className="font-semibold text-[var(--text)] hover:text-[var(--accent)] transition-colors no-underline">
-              Sign in
+              {t('auth.signIn')}
             </Link>
           </p>
         </div>

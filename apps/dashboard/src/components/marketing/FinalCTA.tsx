@@ -3,9 +3,12 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../../features/auth/authState';
 import { Button } from '../ui/Button';
 import { SectionHeader } from '../ui/SectionHeader';
-import { ShieldCheck, Database, Brain } from 'lucide-react';
+import { ShieldCheck, Database, Brain } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+;
 
 export function FinalCTA() {
+  const { t } = useTranslation()
   const [url, setUrl] = useState('https://');
   const navigate = useNavigate();
   
@@ -34,7 +37,7 @@ export function FinalCTA() {
     <section className="py-24 px-6 md:px-12 bg-gradient-to-b from-[var(--bg)] to-[var(--surface)] text-center">
       <SectionHeader 
         title="Know your attack surface before someone else does."
-        description="Register an authorized target, verify ownership and let ThreatSentry analyze the application."
+        description="{t('marketing.ctaDesc')}"
         centered
       />
       
@@ -69,3 +72,4 @@ export function FinalCTA() {
     </section>
   );
 }
+

@@ -1,4 +1,5 @@
 import { X, AlertCircle, ShieldAlert, CheckCircle2, Terminal } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
 import { Finding } from '../../lib/api'
 import { SeverityBadge } from '../../components/ui/SeverityBadge'
@@ -9,6 +10,7 @@ interface FindingDetailModalProps {
 }
 
 export function FindingDetailModal({ finding, onClose }: FindingDetailModalProps) {
+  const { t } = useTranslation()
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -37,7 +39,7 @@ export function FindingDetailModal({ finding, onClose }: FindingDetailModalProps
         <button
           onClick={onClose}
           className="absolute top-4 right-4 md:top-6 md:right-6 text-[var(--text-muted)] hover:text-[var(--text)] p-2 rounded-lg hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
-          aria-label="Close dialog"
+          aria-label={t('findings.closeDialog')}
         >
           <X className="w-5 h-5" />
         </button>
@@ -49,10 +51,10 @@ export function FindingDetailModal({ finding, onClose }: FindingDetailModalProps
             {finding.category}
           </span>
           <span className="px-2 py-0.5 text-[11px] font-bold rounded uppercase tracking-wider bg-[var(--surface-2)] text-[var(--text-secondary)] border border-[var(--border)]">
-            Confidence: {finding.confidence}
+            {t('findings.confidence')} {finding.confidence}
           </span>
           <span className="px-2 py-0.5 text-[11px] font-bold rounded uppercase tracking-wider bg-[var(--surface-2)] text-[var(--text-muted)] border border-[var(--border)]">
-            Method: {finding.detection_method}
+            {t('findings.method')} {finding.detection_method}
           </span>
         </div>
 
@@ -115,7 +117,7 @@ export function FindingDetailModal({ finding, onClose }: FindingDetailModalProps
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-8 pt-4 border-t border-[var(--border)] text-xs text-[var(--text-muted)] font-mono">
-          <span>Fingerprint: {finding.fingerprint.slice(0, 16)}...</span>
+          <span>{t('findings.fingerprint')} {finding.fingerprint.slice(0, 16)}...</span>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import i18n from './i18n'
 
 const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '')
 
@@ -16,7 +17,7 @@ async function getValidToken(): Promise<string> {
   const { data } = await supabase.auth.getSession()
   let session = data.session
   if (!session?.access_token) {
-    throw new Error('Your session has expired. Please sign in again.')
+    throw new Error(i18n.t('common.sessionExpired'))
   }
 
   // Proactively refresh if the access token expires in less than 30 seconds
@@ -40,7 +41,7 @@ async function request<T>(path: string, init?: RequestInit, isRetry = false): Pr
   try {
     token = await getValidToken()
   } catch (err) {
-    throw new Error('Your session has expired. Please sign in again.')
+    throw new Error(i18n.t('common.sessionExpired'))
   }
 
   const response = await fetch(`${apiUrl}${path}`, {

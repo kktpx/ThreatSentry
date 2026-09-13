@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../features/auth/authState';
 import { Button } from '../ui/Button';
 
 export function HeroScanner() {
+  const { t } = useTranslation()
   const [url, setUrl] = useState('https://');
   const navigate = useNavigate();
   
@@ -77,7 +79,7 @@ export function HeroScanner() {
 
         <div className="flex items-center gap-6 p-5 rounded-xl border border-[var(--border)] bg-[var(--bg)]">
           <div className="text-center pr-6 border-r border-[var(--border)]">
-            <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">Security Score</div>
+            <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">Security {t('websiteDetail.score')}</div>
             <div className="text-3xl font-mono font-bold text-[var(--success)] leading-none">
               78<span className="text-sm font-sans text-[var(--text-muted)]">/100</span>
             </div>

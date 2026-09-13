@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import {
@@ -28,6 +29,7 @@ import {
   Website,
 } from '../../lib/api'
 import { FindingDetailModal } from '../findings/FindingDetailModal'
+import { getScanStatusLabel } from '../../lib/i18nHelpers'
 import { Button } from '../../components/ui/Button'
 import { SecurityScore } from '../../components/ui/SecurityScore'
 import { SeverityBadge } from '../../components/ui/SeverityBadge'
@@ -35,6 +37,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Navbar } from '../../components/Navbar'
 
 export function WebsiteDetailPage() {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [website, setWebsite] = useState<Website | null>(null)
@@ -63,12 +66,12 @@ export function WebsiteDetailPage() {
       const updated = await verifyWebsite(id)
       setWebsite((prev) => (prev ? { ...prev, ...updated } : updated))
       if (updated.verification_status === 'VERIFIED') {
-        setVerifyMessage('Ownership verified successfully! You can now start deep scans.')
+        setVerifyMessage(t('websiteDetail.verifySuccess'))
       } else {
-        setActionError('Verification challenge could not be confirmed. Check target availability and try again.')
+        setActionError(t('websiteDetail.verifyFailedChallenge'))
       }
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to verify website.')
+      setActionError(err instanceof Error ? err.message : t('websiteDetail.verifyError'))
     } finally {
       setVerifying(false)
     }
@@ -76,7 +79,7 @@ export function WebsiteDetailPage() {
 
   async function handleDelete() {
     if (!id) return
-    if (!window.confirm(`Are you sure you want to delete '${website?.name || 'this website'}'? This cannot be undone.`)) {
+    if (!window.confirm(t('websiteDetail.deleteConfirm', { name: website?.name || 'this website' }))) {
       return
     }
     setDeleting(true)
@@ -84,7 +87,7 @@ export function WebsiteDetailPage() {
       await deleteWebsite(id)
       navigate('/dashboard')
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to delete website.')
+      setActionError(err instanceof Error ? err.message : t('websiteDetail.deleteError'))
       setDeleting(false)
     }
   }
@@ -109,7 +112,7 @@ export function WebsiteDetailPage() {
         }
       } catch (err) {
         if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load website details.')
+          setError(err instanceof Error ? err.message : t('websiteDetail.loadError'))
         }
       } finally {
         if (isMounted) {
@@ -169,7 +172,7 @@ export function WebsiteDetailPage() {
       const newScan = await startScan(id)
       setScans((prev) => [newScan, ...prev])
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to start scan.')
+      setActionError(err instanceof Error ? err.message : t('websiteDetail.scanStartError'))
     } finally {
       setStartingScan(false)
     }
@@ -184,7 +187,7 @@ export function WebsiteDetailPage() {
         prev.map((s) => (s.id === scanId ? { ...s, ...cancelled } : s))
       )
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to cancel scan.')
+      setActionError(err instanceof Error ? err.message : t('websiteDetail.scanCancelError'))
     } finally {
       setCancellingScanId(null)
     }
@@ -229,7 +232,7 @@ export function WebsiteDetailPage() {
       <main className="app-container pt-8">
         <Link to="/dashboard" className="text-[var(--accent)] hover:underline mb-8 inline-flex items-center gap-1.5 text-sm font-medium">
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Dashboard</span>
+          <span>{t('websiteDetail.backToDashboard')}</span>
         </Link>
 
       <header className="mb-10">
@@ -259,7 +262,7 @@ export function WebsiteDetailPage() {
 
           <div className="flex items-center gap-4">
             <div className="text-right mr-2">
-              <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">Score</div>
+              <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">{t('websiteDetail.score')}</div>
               <SecurityScore score={website.last_score} size="lg" />
             </div>
 
@@ -273,7 +276,7 @@ export function WebsiteDetailPage() {
                   variant="primary"
                   icon={Play}
                 >
-                  {startingScan ? 'Starting...' : activeScan ? 'Scanning...' : 'Start Scan'}
+                  {startingScan ? t('websiteDetail.starting') : activeScan ? t('websiteDetail.scanning') : t('websiteDetail.startScan')}
                 </Button>
               ) : (
                 <Button
@@ -282,7 +285,7 @@ export function WebsiteDetailPage() {
                   variant="primary"
                   icon={ShieldCheck}
                 >
-                  {verifying ? 'Verifying...' : 'Verify Target'}
+                  {verifying ? t('addWebsite.verifying') : t('websiteDetail.verifyTarget')}
                 </Button>
               )}
               <Button
@@ -291,9 +294,9 @@ export function WebsiteDetailPage() {
                 variant="secondary"
                 icon={Trash2}
                 className="text-[var(--text-muted)] hover:text-[var(--danger)] hover:border-[var(--danger)]"
-                title="Delete Target"
+                title={t('websiteDetail.deleteTarget')}
               >
-                Delete
+                {t('common.delete')}
               </Button>
             </div>
           </div>
@@ -321,32 +324,32 @@ export function WebsiteDetailPage() {
             Ownership Verification Required
           </h3>
           <p className="text-sm text-[var(--text-secondary)] mb-4">
-            Active scanning is disabled until you prove ownership of this target by publishing a verification token.
+            {t('websiteDetail.ownershipDesc')}
           </p>
           <div className="bg-[var(--surface-2)] p-4 rounded border border-[var(--border)] font-mono text-xs mb-4">
             <div className="mb-2">
-              <span className="text-[var(--text-muted)] inline-block w-20">Path:</span>
+              <span className="text-[var(--text-muted)] inline-block w-20">{t('websiteDetail.path')}</span>
               <span className="text-[var(--accent)]">{website.normalized_origin}/.well-known/threatsentry.txt</span>
             </div>
             <div>
-              <span className="text-[var(--text-muted)] inline-block w-20">Content:</span>
+              <span className="text-[var(--text-muted)] inline-block w-20">{t('websiteDetail.content')}</span>
               <span className="text-[var(--warning)]">threatsentry-verification={website.verification_token}</span>
             </div>
           </div>
           
           <div className="text-xs text-[var(--text-muted)] bg-[var(--surface-2)] p-4 rounded border border-[var(--border)] leading-relaxed space-y-2 mb-4">
-            <p><strong>Tip:</strong> Create a folder named <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">.well-known</code> in your web server's public root directory (e.g., <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">public/</code>, <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">htdocs/</code>, or <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">var/www/html/</code>). Then, create the <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">threatsentry.txt</code> file inside it.</p>
+            <p><strong>Tip:</strong> {t('addWebsite.folderTip').split('. ')[0] + '.'} <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">.well-known</code> in your web server's public root directory (e.g., <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">public/</code>, <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">htdocs/</code>, or <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">var/www/html/</code>).  {t('addWebsite.folderTip').split('. ')[1]} <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">threatsentry.txt</code> file inside it.</p>
           </div>
 
           <div className="text-xs text-[var(--text-muted)] bg-[var(--surface-2)] p-4 rounded border border-[var(--border)] leading-relaxed space-y-2">
-            <span className="font-semibold uppercase text-[var(--text-secondary)] block mb-1.5">Deploy or Push to your server:</span>
-            <p>If you are using Git (like Vercel, Netlify, GitHub Pages), commit and push the file:</p>
+            <span className="font-semibold uppercase text-[var(--text-secondary)] block mb-1.5">{t('addWebsite.deployStep')}</span>
+            <p>{t('addWebsite.deployDesc')}</p>
             <code className="block bg-[var(--bg)] p-2 rounded border border-[var(--border)] font-mono text-[11px] text-[var(--accent)]">
               git add public/.well-known/threatsentry.txt<br/>
               git commit -m "Add verification file"<br/>
               git push
             </code>
-            <p>Wait for your deployment to finish before clicking <strong>Verify Target</strong> above.</p>
+            <p>{t('addWebsite.deployWait')}</p>
           </div>
         </div>
       )}
@@ -355,8 +358,8 @@ export function WebsiteDetailPage() {
         <div className="mb-8 p-6 glass-card border-[var(--accent)] bg-[var(--accent)]/5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
-              <div className="text-[10px] uppercase font-bold tracking-widest text-[var(--accent)] mb-1">SCAN IN PROGRESS</div>
-              <h3 className="text-xl font-bold text-[var(--text)]">Stage: {activeScan.current_stage}</h3>
+              <div className="text-[10px] uppercase font-bold tracking-widest text-[var(--accent)] mb-1">{t('websiteDetail.scanInProgress')}</div>
+              <h3 className="text-xl font-bold text-[var(--text)]">{t('websiteDetail.stage')} {activeScan.current_stage}</h3>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-2xl font-mono font-bold text-[var(--text)]">
@@ -369,7 +372,7 @@ export function WebsiteDetailPage() {
                 size="sm"
                 icon={Square}
               >
-                {cancellingScanId === activeScan.id ? 'Cancelling...' : 'Cancel'}
+                {cancellingScanId === activeScan.id ? t('common.cancel') : t('common.cancel')}
               </Button>
             </div>
           </div>
@@ -407,7 +410,7 @@ export function WebsiteDetailPage() {
       {activeTab === 'findings' && (
         <section className="animate-in fade-in">
           <div className="flex flex-wrap items-center gap-2 mb-6">
-            <span className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mr-2">Severity:</span>
+            <span className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mr-2">{t('websiteDetail.severityFilter')}</span>
             {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO'].map((sev) => (
               <button
                 key={sev}
@@ -426,11 +429,11 @@ export function WebsiteDetailPage() {
           {filteredFindings.length === 0 ? (
             <div className="glass-card p-12 text-center border-dashed">
               <ShieldCheck className="w-10 h-10 text-[var(--text-muted)] mx-auto mb-4" />
-              <h4 className="text-lg font-bold text-[var(--text)] mb-2">No findings</h4>
+              <h4 className="text-lg font-bold text-[var(--text)] mb-2">{t('websiteDetail.noFindings')}</h4>
               <p className="text-sm text-[var(--text-secondary)]">
                 {findings.length === 0
-                  ? 'Run a scan to detect security vulnerabilities.'
-                  : `No findings matching severity '${selectedSeverity}'.`}
+                  ? t('websiteDetail.noFindingsDesc')
+                  : t('websiteDetail.noFindingsFilter', { severity: selectedSeverity })}
               </p>
             </div>
           ) : (
@@ -439,10 +442,10 @@ export function WebsiteDetailPage() {
                 <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-xs uppercase tracking-wider text-[var(--text-muted)]">
                   <tr>
                     <th className="p-4 font-semibold">Severity</th>
-                    <th className="p-4 font-semibold">Finding</th>
-                    <th className="p-4 font-semibold">Endpoint</th>
-                    <th className="p-4 font-semibold">Category</th>
-                    <th className="p-4 font-semibold">Confidence</th>
+                    <th className="p-4 font-semibold">{t('websiteDetail.colFinding')}</th>
+                    <th className="p-4 font-semibold">{t('websiteDetail.colEndpoint')}</th>
+                    <th className="p-4 font-semibold">{t('websiteDetail.colCategory')}</th>
+                    <th className="p-4 font-semibold">{t('websiteDetail.colConfidence')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
@@ -455,7 +458,7 @@ export function WebsiteDetailPage() {
                       <td className="p-4"><SeverityBadge severity={finding.severity} /></td>
                       <td className="p-4 font-bold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors">
                         {finding.title}
-                        {finding.status === 'NEW' && <Badge className="ml-2">NEW</Badge>}
+                        {finding.status === 'NEW' && <Badge className="ml-2">{t('websiteDetail.new')}</Badge>}
                       </td>
                       <td className="p-4 font-mono text-xs text-[var(--text-secondary)] truncate max-w-[200px]">{finding.endpoint}</td>
                       <td className="p-4 text-xs font-mono text-[var(--text-secondary)]">{finding.category}</td>
@@ -479,25 +482,25 @@ export function WebsiteDetailPage() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="glass-card p-5">
-                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">Pages Crawled</div>
+                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">{t('websiteDetail.pagesCrawled')}</div>
                   <div className="text-3xl font-bold font-mono text-[var(--text)]">
                     {attackSurface.pages_crawled_count || 0}
                   </div>
                 </div>
                 <div className="glass-card p-5">
-                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">Endpoints</div>
+                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">{t('websiteDetail.endpoints')}</div>
                   <div className="text-3xl font-bold font-mono text-[var(--text)]">
                     {attackSurface.endpoints_count || 0}
                   </div>
                 </div>
                 <div className="glass-card p-5">
-                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">Forms</div>
+                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">{t('websiteDetail.forms')}</div>
                   <div className="text-3xl font-bold font-mono text-[var(--text)]">
                     {attackSurface.forms_count || 0}
                   </div>
                 </div>
                 <div className="glass-card p-5">
-                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">External</div>
+                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">{t('websiteDetail.external')}</div>
                   <div className="text-3xl font-bold font-mono text-[var(--text)]">
                     {attackSurface.external_domains_count || 0}
                   </div>
@@ -507,7 +510,7 @@ export function WebsiteDetailPage() {
               {attackSurface.pages_crawled && attackSurface.pages_crawled.length > 0 && (
                 <div className="glass-card overflow-hidden">
                   <div className="bg-[var(--surface-2)] border-b border-[var(--border)] px-4 py-3 text-xs uppercase font-bold tracking-wider text-[var(--text-muted)]">
-                    Crawled Pages
+                    {t('websiteDetail.crawledPages')}
                   </div>
                   <ul className="divide-y divide-[var(--border)] text-xs font-mono text-[var(--text-secondary)] max-h-96 overflow-y-auto m-0 p-0 list-none">
                     {attackSurface.pages_crawled.map((url, idx) => (
@@ -530,18 +533,18 @@ export function WebsiteDetailPage() {
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-xs uppercase tracking-wider text-[var(--text-muted)]">
                   <tr>
-                    <th className="p-4 font-semibold">Date</th>
-                    <th className="p-4 font-semibold">Status</th>
-                    <th className="p-4 font-semibold">Stage</th>
-                    <th className="p-4 font-semibold">Score</th>
-                    <th className="p-4 font-semibold">Findings</th>
+                    <th className="p-4 font-semibold">{t('websiteDetail.colDate')}</th>
+                    <th className="p-4 font-semibold">{t('websiteDetail.colStatus')}</th>
+                    <th className="p-4 font-semibold">{t('websiteDetail.colStage')}</th>
+                    <th className="p-4 font-semibold">{t('websiteDetail.colScore')}</th>
+                    <th className="p-4 font-semibold">{t('websiteDetail.colFindings')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)] text-[var(--text-secondary)]">
                   {scans.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="p-8 text-center text-[var(--text-muted)]">
-                        No scans recorded yet.
+                        {t('websiteDetail.noScans')}
                       </td>
                     </tr>
                   ) : (
@@ -552,7 +555,7 @@ export function WebsiteDetailPage() {
                         </td>
                         <td className="p-4">
                           <Badge variant={scan.status === 'COMPLETED' ? 'success' : scan.status === 'FAILED' ? 'danger' : scan.status === 'CANCELLED' ? 'default' : 'warning'}>
-                            {scan.status}
+                            {getScanStatusLabel(scan.status)}
                           </Badge>
                         </td>
                         <td className="p-4 font-mono text-xs">{scan.current_stage}</td>

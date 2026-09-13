@@ -1,4 +1,6 @@
+import { useTranslation } from 'react-i18next'
 export function MetricsStrip() {
+  const { t } = useTranslation()
   return (
     <section className="border-y border-[var(--border)] bg-[var(--surface-2)]">
       <div className="max-w-[1280px] mx-auto grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-[var(--border)]">

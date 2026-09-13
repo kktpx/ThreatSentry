@@ -1,8 +1,11 @@
-import { Shield } from 'lucide-react';
+import { Shield } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+;
 import { useAuth } from '../../features/auth/authState';
 import { Button } from '../ui/Button';
 
 export function MarketingNavbar() {
+  const { t } = useTranslation()
   let isAuthenticated = false;
   try {
     const { session } = useAuth();
@@ -32,11 +35,11 @@ export function MarketingNavbar() {
         </button>
 
         <div className="hidden lg:flex items-center gap-6">
-          <button onClick={() => scrollTo('top')} className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors cursor-pointer bg-transparent border-none p-0">Overview</button>
-          <button onClick={() => scrollTo('coverage')} className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors cursor-pointer bg-transparent border-none p-0">Coverage</button>
-          <button onClick={() => scrollTo('how-it-works')} className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors cursor-pointer bg-transparent border-none p-0">How It Works</button>
+          <button onClick={() => scrollTo('top')} className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors cursor-pointer bg-transparent border-none p-0">{t('marketing.overview')}</button>
+          <button onClick={() => scrollTo('coverage')} className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors cursor-pointer bg-transparent border-none p-0">{t('marketing.coverage')}</button>
+          <button onClick={() => scrollTo('how-it-works')} className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors cursor-pointer bg-transparent border-none p-0">{t('marketing.howItWorks')}</button>
           <button onClick={() => scrollTo('ml-engine')} className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors cursor-pointer bg-transparent border-none p-0">ML Engine</button>
-          <button onClick={() => scrollTo('sample-report')} className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors cursor-pointer bg-transparent border-none p-0">Sample Report</button>
+          <button onClick={() => scrollTo('sample-report')} className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors cursor-pointer bg-transparent border-none p-0">{t('marketing.sampleReport')}</button>
         </div>
       </div>
 
@@ -68,3 +71,4 @@ export function MarketingNavbar() {
     </nav>
   );
 }
+

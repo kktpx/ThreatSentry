@@ -1,9 +1,10 @@
 import { FormEvent, useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { CheckCircle2, AlertTriangle, Key, ArrowRight, Copy } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, Key, ArrowRight, Copy, ArrowLeft } from 'lucide-react'
 import { createWebsite, verifyWebsite } from '../../lib/api'
 import { Button } from '../../components/ui/Button'
 import { SectionHeader } from '../../components/ui/SectionHeader'
+import { Navbar } from '../../components/Navbar'
 
 export function AddWebsitePage() {
   const [searchParams] = useSearchParams()
@@ -87,13 +88,19 @@ export function AddWebsitePage() {
   }
 
   return (
-    <main className="app-container min-h-screen">
-      <div className="w-full max-w-3xl mx-auto pt-8">
-        <SectionHeader 
-          eyebrow="ASSET ONBOARDING"
-          title="Add new target"
-          description="Only add websites you own or are explicitly authorized to assess."
-        />
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <Navbar />
+      <main className="app-container">
+        <div className="w-full max-w-3xl mx-auto pt-8">
+          <Link to="/dashboard" className="text-[var(--accent)] hover:underline mb-6 inline-flex items-center gap-1.5 text-sm font-medium">
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Dashboard</span>
+          </Link>
+          <SectionHeader 
+            eyebrow="ASSET ONBOARDING"
+            title="Add new target"
+            description="Only add websites you own or are explicitly authorized to assess."
+          />
 
         {/* Step Indicator */}
         <div className="flex items-center gap-2 sm:gap-4 mb-10 font-mono text-sm overflow-x-auto pb-2">
@@ -186,6 +193,9 @@ export function AddWebsitePage() {
                       <Copy className="w-4 h-4" />
                     </button>
                   </div>
+                  <p className="text-xs text-[var(--text-muted)] mt-2.5 leading-relaxed">
+                    <strong>Tip:</strong> Create a folder named <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">.well-known</code> in your web server's public root directory (e.g., <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">public/</code>, <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">htdocs/</code>, or <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">var/www/html/</code>). Then, create the <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">threatsentry.txt</code> file inside it.
+                  </p>
                 </div>
 
                 <div>
@@ -253,5 +263,6 @@ export function AddWebsitePage() {
         </div>
       </div>
     </main>
+    </div>
   )
 }

@@ -32,6 +32,7 @@ import { Button } from '../../components/ui/Button'
 import { SecurityScore } from '../../components/ui/SecurityScore'
 import { SeverityBadge } from '../../components/ui/SeverityBadge'
 import { Badge } from '../../components/ui/Badge'
+import { Navbar } from '../../components/Navbar'
 
 export function WebsiteDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -223,14 +224,13 @@ export function WebsiteDetailPage() {
   })
 
   return (
-    <main className="app-container min-h-screen">
-      <div className="mb-8 font-mono text-[11px] text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-2">
-        <Link to="/dashboard" className="hover:text-[var(--text)] transition-colors no-underline text-inherit">Dashboard</Link>
-        <span>/</span>
-        <Link to="/dashboard" className="hover:text-[var(--text)] transition-colors no-underline text-inherit">Targets</Link>
-        <span>/</span>
-        <span className="text-[var(--text)] font-bold">{website.name}</span>
-      </div>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <Navbar />
+      <main className="app-container pt-8">
+        <Link to="/dashboard" className="text-[var(--accent)] hover:underline mb-8 inline-flex items-center gap-1.5 text-sm font-medium">
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Dashboard</span>
+        </Link>
 
       <header className="mb-10">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
@@ -564,5 +564,6 @@ export function WebsiteDetailPage() {
         onClose={() => setSelectedFinding(null)}
       />
     </main>
+    </div>
   )
 }

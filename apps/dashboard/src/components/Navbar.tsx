@@ -1,13 +1,12 @@
-import { Shield, Cpu, LogOut, Languages } from 'lucide-react'
+import { Shield, Cpu, LogOut, Languages, Home } from 'lucide-react'
 import { useAuth } from '../features/auth/authState'
 import { useTranslation } from 'react-i18next'
+import { Link, useLocation } from 'react-router'
 
 export function Navbar() {
   const { t, i18n } = useTranslation()
-  let currentPath = ''
-  if (typeof window !== 'undefined') {
-    currentPath = window.location.pathname
-  }
+  const location = useLocation()
+  const currentPath = location.pathname
 
   let signOut = async () => {}
   let userEmail: string | null = null
@@ -29,14 +28,25 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-12 h-16 bg-[var(--bg)]/80 backdrop-blur-md border-b border-[var(--border)]">
       <div className="flex items-center gap-8">
-        <a href="/dashboard" className="flex items-center gap-2.5 text-inherit no-underline font-sans font-bold text-lg tracking-tight text-[var(--text)]">
+        <Link to="/dashboard" className="flex items-center gap-2.5 text-inherit no-underline font-sans font-bold text-lg tracking-tight text-[var(--text)]">
           <Shield className="w-5 h-5 text-[var(--accent)]" />
           <span>ThreatSentry</span>
-        </a>
+        </Link>
 
         <div className="hidden md:flex items-center gap-6 list-none m-0 p-0">
-          <a
-            href="/dashboard"
+          <Link
+            to="/"
+            className={`text-sm font-medium transition-colors no-underline flex items-center gap-1.5 ${
+              isActive('/')
+                ? 'text-[var(--text)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text)]'
+            }`}
+          >
+            <Home className="w-3.5 h-3.5" />
+            <span>Home</span>
+          </Link>
+          <Link
+            to="/dashboard"
             className={`text-sm font-medium transition-colors no-underline ${
               isActive('/dashboard')
                 ? 'text-[var(--text)]'
@@ -44,9 +54,9 @@ export function Navbar() {
             }`}
           >
             {t('navbar.dashboard')}
-          </a>
-          <a
-            href="/websites/new"
+          </Link>
+          <Link
+            to="/websites/new"
             className={`text-sm font-medium transition-colors no-underline ${
               isActive('/websites/new')
                 ? 'text-[var(--text)]'
@@ -54,9 +64,9 @@ export function Navbar() {
             }`}
           >
             <span>Targets</span>
-          </a>
-          <a
-            href="/model"
+          </Link>
+          <Link
+            to="/model"
             className={`text-sm font-medium transition-colors no-underline flex items-center gap-1.5 ${
               isActive('/model')
                 ? 'text-[var(--text)]'
@@ -65,7 +75,7 @@ export function Navbar() {
           >
             <Cpu className="w-3.5 h-3.5" />
             <span>{t('navbar.mlIntelligence')}</span>
-          </a>
+          </Link>
         </div>
       </div>
 

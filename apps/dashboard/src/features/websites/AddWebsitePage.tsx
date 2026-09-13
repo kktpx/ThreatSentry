@@ -193,6 +193,9 @@ export function AddWebsitePage() {
                       <Copy className="w-4 h-4" />
                     </button>
                   </div>
+                  <p className="text-xs text-[var(--text-muted)] mt-2.5 leading-relaxed">
+                    <strong>Tip:</strong> Create a folder named <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">.well-known</code> in your web server's public root directory (e.g., <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">public/</code>, <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">htdocs/</code>, or <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">var/www/html/</code>). Then, create the <code className="bg-[var(--surface-2)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">threatsentry.txt</code> file inside it.
+                  </p>
                 </div>
 
                 <div>

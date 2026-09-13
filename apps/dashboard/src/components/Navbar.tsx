@@ -1,4 +1,4 @@
-import { Shield, Globe, Cpu, LogOut, PlusCircle, Languages } from 'lucide-react'
+import { Shield, Cpu, LogOut, Languages } from 'lucide-react'
 import { useAuth } from '../features/auth/authState'
 import { useTranslation } from 'react-i18next'
 
@@ -27,83 +27,73 @@ export function Navbar() {
   }
 
   return (
-    <header className="border-b border-[#1c2b42] bg-[#070d18]/80 backdrop-blur sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <a href="/dashboard" className="flex items-center gap-2.5 text-inherit no-underline">
-            <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-              <Shield className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-bold tracking-tight text-white text-base">ThreatSentry</span>
-              <span className="hidden sm:inline-block ml-2 text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
-                Security Scanner
-              </span>
-            </div>
+    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-12 h-16 bg-[var(--bg)]/80 backdrop-blur-md border-b border-[var(--border)]">
+      <div className="flex items-center gap-8">
+        <a href="/dashboard" className="flex items-center gap-2.5 text-inherit no-underline font-sans font-bold text-lg tracking-tight text-[var(--text)]">
+          <Shield className="w-5 h-5 text-[var(--accent)]" />
+          <span>ThreatSentry</span>
+        </a>
+
+        <div className="hidden md:flex items-center gap-6 list-none m-0 p-0">
+          <a
+            href="/dashboard"
+            className={`text-sm font-medium transition-colors no-underline ${
+              isActive('/dashboard')
+                ? 'text-[var(--text)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text)]'
+            }`}
+          >
+            {t('navbar.dashboard')}
           </a>
-
-          <nav className="hidden md:flex items-center gap-1">
-            <a
-              href="/dashboard"
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors no-underline ${
-                isActive('/dashboard')
-                  ? 'bg-[#111e33] text-cyan-400 border border-[#2a3f5f]'
-                  : 'text-slate-400 hover:text-white hover:bg-[#0c1524]'
-              }`}
-            >
-              {t('navbar.dashboard')}
-            </a>
-            <a
-              href="/websites/new"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors no-underline ${
-                isActive('/websites/new')
-                  ? 'bg-[#111e33] text-cyan-400 border border-[#2a3f5f]'
-                  : 'text-slate-400 hover:text-white hover:bg-[#0c1524]'
-              }`}
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>{t('navbar.addWebsite')}</span>
-            </a>
-            <a
-              href="/model"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors no-underline ${
-                isActive('/model')
-                  ? 'bg-[#111e33] text-cyan-400 border border-[#2a3f5f]'
-                  : 'text-slate-400 hover:text-white hover:bg-[#0c1524]'
-              }`}
-            >
-              <Cpu className="w-3.5 h-3.5" />
-              <span>{t('navbar.mlIntelligence')}</span>
-            </a>
-          </nav>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={toggleLanguage}
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white hover:bg-[#0c1524] transition-all cursor-pointer"
-            title="Toggle Language"
+          <a
+            href="/websites/new"
+            className={`text-sm font-medium transition-colors no-underline ${
+              isActive('/websites/new')
+                ? 'text-[var(--text)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text)]'
+            }`}
           >
-            <Languages className="w-4 h-4" />
-            <span className="uppercase text-xs">{i18n.language === 'en' ? t('lang.th') : t('lang.en')}</span>
-          </button>
-
-          {userEmail && (
-            <span className="hidden lg:inline-block text-xs font-mono text-slate-400 bg-[#0c1524] px-2.5 py-1 rounded border border-[#1c2b42]">
-              {userEmail}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={() => void signOut()}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-950/20 border border-transparent hover:border-rose-900/40 transition-all cursor-pointer"
+            <span>Targets</span>
+          </a>
+          <a
+            href="/model"
+            className={`text-sm font-medium transition-colors no-underline flex items-center gap-1.5 ${
+              isActive('/model')
+                ? 'text-[var(--text)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text)]'
+            }`}
           >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>{t('navbar.signOut')}</span>
-          </button>
+            <Cpu className="w-3.5 h-3.5" />
+            <span>{t('navbar.mlIntelligence')}</span>
+          </a>
         </div>
       </div>
-    </header>
+
+      <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={toggleLanguage}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] border border-transparent transition-all cursor-pointer bg-transparent"
+          title="Toggle Language"
+        >
+          <Languages className="w-4 h-4" />
+          <span className="uppercase text-xs font-mono">{i18n.language === 'en' ? t('lang.th') : t('lang.en')}</span>
+        </button>
+
+        {userEmail && (
+          <span className="hidden lg:inline-block text-xs font-mono text-[var(--text-muted)] tracking-tight">
+            {userEmail}
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={() => void signOut()}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text)] border border-[var(--border)] hover:border-[var(--border-hover)] bg-[var(--surface)] transition-all cursor-pointer font-sans"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline-block">{t('navbar.signOut')}</span>
+        </button>
+      </div>
+    </nav>
   )
 }

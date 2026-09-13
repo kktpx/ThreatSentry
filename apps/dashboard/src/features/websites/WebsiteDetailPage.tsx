@@ -1,22 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import {
-  Shield,
   ShieldCheck,
-  ShieldAlert,
   AlertTriangle,
   Play,
   Square,
   Globe,
   Layers,
-  FileText,
   Activity,
   ArrowLeft,
   ChevronRight,
-  ExternalLink,
-  Info,
   Trash2,
   CheckCircle2,
+  ShieldAlert
 } from 'lucide-react'
 
 import {
@@ -32,6 +28,10 @@ import {
   Website,
 } from '../../lib/api'
 import { FindingDetailModal } from '../findings/FindingDetailModal'
+import { Button } from '../../components/ui/Button'
+import { SecurityScore } from '../../components/ui/SecurityScore'
+import { SeverityBadge } from '../../components/ui/SeverityBadge'
+import { Badge } from '../../components/ui/Badge'
 
 export function WebsiteDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -40,7 +40,7 @@ export function WebsiteDetailPage() {
   const [scans, setScans] = useState<ScanJob[]>([])
   const [findings, setFindings] = useState<Finding[]>([])
   const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null)
-  const [activeTab, setActiveTab] = useState<'findings' | 'history' | 'surface'>('findings')
+  const [activeTab, setActiveTab] = useState<'findings' | 'surface' | 'history'>('findings')
   const [selectedSeverity, setSelectedSeverity] = useState<string>('ALL')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -124,7 +124,6 @@ export function WebsiteDetailPage() {
     }
   }, [id])
 
-  // Setup polling if any scan is PENDING or RUNNING
   const activeScan = scans.find(
     (s) => s.status === 'PENDING' || s.status === 'RUNNING'
   )
@@ -192,9 +191,9 @@ export function WebsiteDetailPage() {
 
   if (loading) {
     return (
-      <main className="app-shell">
-        <p role="status" className="text-slate-400 py-12 text-center text-sm">
-          Loading website details...
+      <main className="app-container">
+        <p role="status" className="text-[var(--text-muted)] py-12 text-center text-sm font-mono">
+          Loading target...
         </p>
       </main>
     )
@@ -202,12 +201,12 @@ export function WebsiteDetailPage() {
 
   if (error || !website) {
     return (
-      <main className="app-shell">
-        <Link to="/dashboard" className="text-cyan-400 hover:underline mb-4 inline-flex items-center gap-1.5 text-sm">
+      <main className="app-container">
+        <Link to="/dashboard" className="text-[var(--accent)] hover:underline mb-4 inline-flex items-center gap-1.5 text-sm">
           <ArrowLeft className="w-4 h-4" />
           <span>&larr; Back to Dashboard</span>
         </Link>
-        <p role="alert" className="text-rose-400 mt-4 p-4 rounded-lg bg-rose-950/30 border border-rose-900/50">
+        <p role="alert" className="text-[var(--danger)] mt-4 p-4 rounded-lg bg-[var(--danger)]/10 border border-[var(--danger)]/30">
           {error || 'Website not found.'}
         </p>
       </main>
@@ -223,321 +222,281 @@ export function WebsiteDetailPage() {
     return f.severity === selectedSeverity
   })
 
-  const getSeverityBadgeClass = (severity: string) => {
-    switch (severity) {
-      case 'CRITICAL':
-        return 'badge-critical'
-      case 'HIGH':
-        return 'badge-high'
-      case 'MEDIUM':
-        return 'badge-medium'
-      case 'LOW':
-        return 'badge-low'
-      default:
-        return 'badge-info'
-    }
-  }
-
   return (
     <main className="app-container min-h-screen">
-      {/* Navigation Breadcrumb */}
-        <div className="mb-6">
-          <Link
-            to="/dashboard"
-            className="text-cyan-400 hover:text-cyan-300 inline-flex items-center gap-1.5 text-sm font-medium no-underline transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Dashboard</span>
-          </Link>
-        </div>
+      <div className="mb-8 font-mono text-[11px] text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-2">
+        <Link to="/dashboard" className="hover:text-[var(--text)] transition-colors no-underline text-inherit">Dashboard</Link>
+        <span>/</span>
+        <Link to="/dashboard" className="hover:text-[var(--text)] transition-colors no-underline text-inherit">Targets</Link>
+        <span>/</span>
+        <span className="text-[var(--text)] font-bold">{website.name}</span>
+      </div>
 
-        {/* Header Console */}
-        <header className="console-header glass-card p-6 sm:p-8 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div>
-              <div className="flex flex-wrap items-center gap-2.5 mb-2">
-                <span className="eyebrow">STATUS:</span>
-                <span
-                  className={`text-xs font-bold px-3 py-0.5 rounded-full uppercase tracking-wider ${
-                    isVerified
-                      ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                      : 'bg-rose-950 text-rose-400 border border-rose-800'
-                  }`}
-                >
-                  {website.verification_status}
-                </span>
-                <span className="text-xs text-slate-400 font-mono bg-[#111e33] px-2.5 py-0.5 rounded border border-[#1c2b42]">
-                  Asset ID: {website.id.slice(0, 8)}
-                </span>
-              </div>
-
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+      <header className="mb-10">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <h1 className="text-3xl font-extrabold text-[var(--text)] tracking-tight">
                 {website.name}
               </h1>
-              <p className="subtitle font-mono text-xs sm:text-sm text-cyan-300/80 mt-1">
-                {website.normalized_origin}
+              {isVerified ? (
+                <Badge variant="success"><CheckCircle2 className="w-3 h-3" /> Verified</Badge>
+              ) : (
+                <Badge variant="danger"><AlertTriangle className="w-3 h-3" /> Unverified</Badge>
+              )}
+            </div>
+            
+            <a 
+              href={website.normalized_origin} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm font-mono text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors no-underline"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              {website.normalized_origin}
+            </a>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right mr-2">
+              <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">Score</div>
+              <SecurityScore score={website.last_score} size="lg" />
+            </div>
+
+            <div className="h-12 w-px bg-[var(--border)] hidden sm:block" />
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              {isVerified ? (
+                <Button
+                  onClick={() => void handleStartScan()}
+                  disabled={startingScan || !!activeScan}
+                  variant="primary"
+                  icon={Play}
+                >
+                  {startingScan ? 'Starting...' : activeScan ? 'Scanning...' : 'Start Scan'}
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => void handleVerify()}
+                  disabled={verifying}
+                  variant="primary"
+                  icon={ShieldCheck}
+                >
+                  {verifying ? 'Verifying...' : 'Verify Target'}
+                </Button>
+              )}
+              <Button
+                onClick={() => void handleDelete()}
+                disabled={deleting}
+                variant="secondary"
+                icon={Trash2}
+                className="text-[var(--text-muted)] hover:text-[var(--danger)] hover:border-[var(--danger)]"
+                title="Delete Target"
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {verifyMessage && (
+        <div role="status" className="mb-8 p-4 rounded-lg bg-[var(--success)]/10 border border-[var(--success)]/30 text-[var(--success)] text-sm flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span>{verifyMessage}</span>
+        </div>
+      )}
+
+      {actionError && (
+        <div role="alert" className="mb-8 p-4 rounded-lg bg-[var(--danger)]/10 border border-[var(--danger)]/30 text-[var(--danger)] text-sm flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>{actionError}</span>
+        </div>
+      )}
+
+      {!isVerified && (
+        <div className="mb-8 p-6 glass-card bg-[var(--warning)]/5 border-[var(--warning)]/30">
+          <h3 className="text-sm font-bold text-[var(--warning)] mb-2 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" />
+            Ownership Verification Required
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)] mb-4">
+            Active scanning is disabled until you prove ownership of this target by publishing a verification token.
+          </p>
+          <div className="bg-[var(--surface-2)] p-4 rounded border border-[var(--border)] font-mono text-xs">
+            <div className="mb-2">
+              <span className="text-[var(--text-muted)] inline-block w-20">Path:</span>
+              <span className="text-[var(--accent)]">{website.normalized_origin}/.well-known/threatsentry.txt</span>
+            </div>
+            <div>
+              <span className="text-[var(--text-muted)] inline-block w-20">Content:</span>
+              <span className="text-[var(--warning)]">threatsentry-verification={website.verification_token}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeScan && (
+        <div className="mb-8 p-6 glass-card border-[var(--accent)] bg-[var(--accent)]/5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div>
+              <div className="text-[10px] uppercase font-bold tracking-widest text-[var(--accent)] mb-1">SCAN IN PROGRESS</div>
+              <h3 className="text-xl font-bold text-[var(--text)]">Stage: {activeScan.current_stage}</h3>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-2xl font-mono font-bold text-[var(--text)]">
+                {activeScan.progress}%
+              </span>
+              <Button
+                onClick={() => void handleCancelScan(activeScan.id)}
+                disabled={cancellingScanId === activeScan.id}
+                variant="danger"
+                size="sm"
+                icon={Square}
+              >
+                {cancellingScanId === activeScan.id ? 'Cancelling...' : 'Cancel'}
+              </Button>
+            </div>
+          </div>
+          <div className="w-full bg-[var(--surface-2)] h-2 rounded-full overflow-hidden border border-[var(--border)]">
+            <div
+              className="bg-[var(--accent)] h-full rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${Math.max(activeScan.progress, 5)}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="border-b border-[var(--border)] mb-8 flex gap-6 font-semibold text-sm">
+        <button 
+          onClick={() => setActiveTab('findings')}
+          className={`pb-4 cursor-pointer transition-colors bg-transparent border-none p-0 ${activeTab === 'findings' ? 'text-[var(--accent)] border-b-2 border-[var(--accent)]' : 'text-[var(--text-secondary)] hover:text-[var(--text)]'}`}
+        >
+          Findings <span className="ml-1 text-xs bg-[var(--surface-2)] px-1.5 py-0.5 rounded font-mono font-normal">{findings.length}</span>
+        </button>
+        <button 
+          onClick={() => setActiveTab('surface')}
+          className={`pb-4 cursor-pointer transition-colors bg-transparent border-none p-0 ${activeTab === 'surface' ? 'text-[var(--accent)] border-b-2 border-[var(--accent)]' : 'text-[var(--text-secondary)] hover:text-[var(--text)]'}`}
+        >
+          Attack Surface
+        </button>
+        <button 
+          onClick={() => setActiveTab('history')}
+          className={`pb-4 cursor-pointer transition-colors bg-transparent border-none p-0 ${activeTab === 'history' ? 'text-[var(--accent)] border-b-2 border-[var(--accent)]' : 'text-[var(--text-secondary)] hover:text-[var(--text)]'}`}
+        >
+          History
+        </button>
+      </div>
+
+      {activeTab === 'findings' && (
+        <section className="animate-in fade-in">
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            <span className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mr-2">Severity:</span>
+            {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO'].map((sev) => (
+              <button
+                key={sev}
+                onClick={() => setSelectedSeverity(sev)}
+                className={`px-3 py-1 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer border ${
+                  selectedSeverity === sev
+                    ? 'bg-[var(--text)] text-[var(--bg)] border-[var(--text)]'
+                    : 'bg-[var(--surface-2)] text-[var(--text-secondary)] hover:text-[var(--text)] border-[var(--border)]'
+                }`}
+              >
+                {sev}
+              </button>
+            ))}
+          </div>
+
+          {filteredFindings.length === 0 ? (
+            <div className="glass-card p-12 text-center border-dashed">
+              <ShieldCheck className="w-10 h-10 text-[var(--text-muted)] mx-auto mb-4" />
+              <h4 className="text-lg font-bold text-[var(--text)] mb-2">No findings</h4>
+              <p className="text-sm text-[var(--text-secondary)]">
+                {findings.length === 0
+                  ? 'Run a scan to detect security vulnerabilities.'
+                  : `No findings matching severity '${selectedSeverity}'.`}
               </p>
             </div>
-
-            {/* Score & Action Button */}
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="p-3 bg-[#070d18] border border-[#1c2b42] rounded-lg text-right">
-                <span className="text-[10px] uppercase font-semibold text-slate-400 block">
-                  Security Score
-                </span>
-                <strong className="text-lg sm:text-xl font-bold text-white">
-                  {website.last_score === null ? 'Not scanned' : `${website.last_score} / 100`}
-                </strong>
-              </div>
-
-              <div className="flex items-center gap-3">
-                {isVerified ? (
-                  <button
-                    type="button"
-                    onClick={() => void handleStartScan()}
-                    disabled={startingScan || !!activeScan}
-                    className={`flex items-center gap-2 px-5 py-3 rounded-lg font-bold text-sm transition-all cursor-pointer ${
-                      startingScan || activeScan
-                        ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
-                        : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-500/20'
-                    }`}
-                  >
-                    <Play className="w-4 h-4 fill-current" />
-                    <span>{startingScan ? 'Starting Scan...' : activeScan ? 'Scan in Progress' : 'Start Deep Scan'}</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => void handleVerify()}
-                    disabled={verifying}
-                    className="flex items-center gap-2 px-5 py-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    <ShieldCheck className="w-4 h-4" />
-                    <span>{verifying ? 'Verifying...' : 'Verify Now'}</span>
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => void handleDelete()}
-                  disabled={deleting}
-                  className="p-3 rounded-lg bg-[#111e33] hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-[#1c2b42] hover:border-rose-900/50 transition-all cursor-pointer"
-                  title="Delete Target"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {verifyMessage && (
-            <div role="status" className="mt-4 p-3 rounded-lg bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-sm flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-              <span>{verifyMessage}</span>
-            </div>
-          )}
-
-          {actionError && (
-            <div role="alert" className="mt-4 p-3 rounded-lg bg-rose-950/60 border border-rose-800 text-rose-300 text-sm">
-              {actionError}
-            </div>
-          )}
-
-          {!isVerified && (
-            <div className="mt-6 p-5 rounded-lg bg-amber-950/20 border border-amber-900/50">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h3 className="text-sm font-bold text-amber-400 mb-1 flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-400" />
-                    <span>Ownership Verification Required</span>
-                  </h3>
-                  <p className="text-xs text-slate-300">
-                    Deep security scans can only be performed on websites whose ownership has been verified via <code>/.well-known/threatsentry.txt</code>.
-                  </p>
-                  <div className="mt-3 bg-[#070d18] p-3 rounded border border-[#1c2b42] text-xs font-mono space-y-1">
-                    <p className="text-slate-400">Challenge URL: <span className="text-cyan-400">{website.normalized_origin}/.well-known/threatsentry.txt</span></p>
-                    <p className="text-slate-400">File Content: <span className="text-emerald-400">threatsentry-verification={website.verification_token || '...'}</span></p>
-                  </div>
-                </div>
-
-                <div className="shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => void handleVerify()}
-                    disabled={verifying}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    <ShieldCheck className="w-4 h-4" />
-                    <span>{verifying ? 'Verifying...' : 'Verify Ownership Now'}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </header>
-
-        {/* Active Scan Banner */}
-        {activeScan && (
-          <div className="glass-card p-6 mb-8 border-cyan-500/60 bg-cyan-950/10 shadow-cyan-950/30">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-              <div>
-                <p className="eyebrow text-cyan-400">ACTIVE SCAN IN PROGRESS</p>
-                <h3 className="text-xl font-bold text-white mt-1">Stage: {activeScan.current_stage}</h3>
-                <span className="text-xs text-slate-400 font-mono">
-                  Started: {activeScan.started_at ? new Date(activeScan.started_at).toLocaleTimeString() : 'Just now'}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <span className="text-2xl font-mono font-bold text-cyan-400">
-                  {activeScan.progress}%
-                </span>
-                <button
-                  type="button"
-                  onClick={() => void handleCancelScan(activeScan.id)}
-                  disabled={cancellingScanId === activeScan.id}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-800 transition-colors cursor-pointer"
-                >
-                  <Square className="w-3.5 h-3.5 fill-current" />
-                  <span>{cancellingScanId === activeScan.id ? 'Cancelling...' : 'Cancel Scan'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="w-full bg-[#070d18] h-2.5 rounded-full overflow-hidden border border-[#1c2b42]">
-              <div
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${Math.max(activeScan.progress, 5)}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Section: Findings */}
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-cyan-400" />
-              <span>Vulnerability Findings ({findings.length})</span>
-            </h3>
-          </div>
-            {/* Severity Filter */}
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="text-xs uppercase font-semibold text-slate-500 mr-1">Filter Severity:</span>
-              {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO'].map((sev) => (
-                <button
-                  key={sev}
-                  onClick={() => setSelectedSeverity(sev)}
-                  className={`px-2.5 py-1 rounded text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
-                    selectedSeverity === sev
-                      ? 'bg-cyan-500 text-slate-950'
-                      : 'bg-[#111e33] text-slate-400 hover:text-white border border-[#1c2b42]'
-                  }`}
-                >
-                  {sev}
-                </button>
-              ))}
-            </div>
-
-            {filteredFindings.length === 0 ? (
-              <div className="glass-card p-10 text-center text-slate-400">
-                <ShieldCheck className="w-10 h-10 text-emerald-400 mx-auto mb-2 opacity-80" />
-                <h4 className="text-base font-bold text-white">No Findings Detected</h4>
-                <p className="text-xs text-slate-500 mt-1">
-                  {findings.length === 0
-                    ? 'Start a Deep Scan to run automated passive and active vulnerability testing.'
-                    : `No findings matching severity '${selectedSeverity}'.`}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-3">
-                {filteredFindings.map((finding) => (
-                  <div
-                    key={finding.id}
-                    onClick={() => setSelectedFinding(finding)}
-                    className="glass-card p-4 sm:p-5 hover:border-cyan-500/40 cursor-pointer transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 group"
-                  >
-                    <div className="space-y-1.5 flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`px-2 py-0.5 text-[11px] font-bold rounded uppercase tracking-wider ${getSeverityBadgeClass(finding.severity)}`}>
-                          {finding.severity}
-                        </span>
-                        <span className="text-xs text-slate-400 font-mono">
-                          {finding.category}
-                        </span>
-                        <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-[#111e33] text-slate-300 border border-[#1c2b42]">
-                          {finding.status}
-                        </span>
-                        <span className="text-[10px] uppercase px-1.5 py-0.5 rounded bg-cyan-950/40 text-cyan-300 border border-cyan-800/40">
-                          {finding.confidence}
-                        </span>
-                      </div>
-
-                      <h4 className="text-base font-bold text-white group-hover:text-cyan-300 transition-colors truncate">
+          ) : (
+            <div className="glass-card overflow-hidden">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-xs uppercase tracking-wider text-[var(--text-muted)]">
+                  <tr>
+                    <th className="p-4 font-semibold">Severity</th>
+                    <th className="p-4 font-semibold">Finding</th>
+                    <th className="p-4 font-semibold">Endpoint</th>
+                    <th className="p-4 font-semibold">Category</th>
+                    <th className="p-4 font-semibold">Confidence</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border)]">
+                  {filteredFindings.map((finding) => (
+                    <tr 
+                      key={finding.id} 
+                      onClick={() => setSelectedFinding(finding)}
+                      className="hover:bg-[var(--surface-2)] cursor-pointer transition-colors group"
+                    >
+                      <td className="p-4"><SeverityBadge severity={finding.severity} /></td>
+                      <td className="p-4 font-bold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors">
                         {finding.title}
-                      </h4>
-                      <div className="text-xs font-mono text-slate-400 truncate">
-                        <code>{finding.endpoint}</code>
-                        {finding.parameter && (
-                          <span className="ml-2 text-amber-300 font-sans">
-                            param: <code>{finding.parameter}</code>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 text-xs text-cyan-400 font-medium group-hover:translate-x-1 transition-transform shrink-0">
-                      <span>View evidence</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                        {finding.status === 'NEW' && <Badge className="ml-2">NEW</Badge>}
+                      </td>
+                      <td className="p-4 font-mono text-xs text-[var(--text-secondary)] truncate max-w-[200px]">{finding.endpoint}</td>
+                      <td className="p-4 text-xs font-mono text-[var(--text-secondary)]">{finding.category}</td>
+                      <td className="p-4 text-xs font-mono text-[var(--text-secondary)]">{finding.confidence}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
+      )}
 
-        {/* Section: Attack Surface */}
-        {attackSurface && (
-          <section className="mb-10">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
-              <Layers className="w-5 h-5 text-cyan-400" />
-              <span>Attack Surface</span>
-            </h3>
+      {activeTab === 'surface' && (
+        <section className="animate-in fade-in">
+          {!attackSurface ? (
+            <div className="glass-card p-12 text-center text-[var(--text-secondary)] text-sm">
+              No attack surface data available. Complete a scan first.
+            </div>
+          ) : (
             <div className="space-y-6">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="glass-card p-4">
-                  <span className="text-xs uppercase font-semibold text-slate-400">Pages Crawled</span>
-                  <div className="text-2xl font-bold text-white mt-1">
+                <div className="glass-card p-5">
+                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">Pages Crawled</div>
+                  <div className="text-3xl font-bold font-mono text-[var(--text)]">
                     {attackSurface.pages_crawled_count || 0}
                   </div>
                 </div>
-                <div className="glass-card p-4">
-                  <span className="text-xs uppercase font-semibold text-slate-400">Discovered Endpoints</span>
-                  <div className="text-2xl font-bold text-white mt-1">
+                <div className="glass-card p-5">
+                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">Endpoints</div>
+                  <div className="text-3xl font-bold font-mono text-[var(--text)]">
                     {attackSurface.endpoints_count || 0}
                   </div>
                 </div>
-                <div className="glass-card p-4">
-                  <span className="text-xs uppercase font-semibold text-slate-400">Discovered Forms</span>
-                  <div className="text-2xl font-bold text-white mt-1">
+                <div className="glass-card p-5">
+                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">Forms</div>
+                  <div className="text-3xl font-bold font-mono text-[var(--text)]">
                     {attackSurface.forms_count || 0}
                   </div>
                 </div>
-                <div className="glass-card p-4">
-                  <span className="text-xs uppercase font-semibold text-slate-400">External Domains</span>
-                  <div className="text-2xl font-bold text-white mt-1">
+                <div className="glass-card p-5">
+                  <div className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-widest mb-1">External</div>
+                  <div className="text-3xl font-bold font-mono text-[var(--text)]">
                     {attackSurface.external_domains_count || 0}
                   </div>
                 </div>
               </div>
 
               {attackSurface.pages_crawled && attackSurface.pages_crawled.length > 0 && (
-                <div className="glass-card p-5">
-                  <h4 className="text-sm font-bold text-white mb-3">Crawled Page URLs</h4>
-                  <ul className="divide-y divide-[#1c2b42] text-xs font-mono text-slate-300 max-h-60 overflow-y-auto">
+                <div className="glass-card overflow-hidden">
+                  <div className="bg-[var(--surface-2)] border-b border-[var(--border)] px-4 py-3 text-xs uppercase font-bold tracking-wider text-[var(--text-muted)]">
+                    Crawled Pages
+                  </div>
+                  <ul className="divide-y divide-[var(--border)] text-xs font-mono text-[var(--text-secondary)] max-h-96 overflow-y-auto m-0 p-0 list-none">
                     {attackSurface.pages_crawled.map((url, idx) => (
-                      <li key={idx} className="py-2 truncate">
+                      <li key={idx} className="p-3 hover:bg-[var(--surface-2)] transition-colors truncate">
                         {url}
                       </li>
                     ))}
@@ -545,74 +504,50 @@ export function WebsiteDetailPage() {
                 </div>
               )}
             </div>
-          </section>
-        )}
+          )}
+        </section>
+      )}
 
-        {/* Section: Scan History */}
-        <section className="mb-10">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
-            <Activity className="w-5 h-5 text-cyan-400" />
-            <span>Scan History ({scans.length})</span>
-          </h3>
+      {activeTab === 'history' && (
+        <section className="animate-in fade-in">
           <div className="glass-card overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs sm:text-sm">
-                <thead className="bg-[#111e33] text-slate-400 uppercase tracking-wider text-xs border-b border-[#1c2b42]">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-[var(--surface-2)] border-b border-[var(--border)] text-xs uppercase tracking-wider text-[var(--text-muted)]">
                   <tr>
-                    <th className="p-4">Scan Date</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4">Stage</th>
-                    <th className="p-4">Score</th>
-                    <th className="p-4">Findings</th>
-                    <th className="p-4 text-right">Actions</th>
+                    <th className="p-4 font-semibold">Date</th>
+                    <th className="p-4 font-semibold">Status</th>
+                    <th className="p-4 font-semibold">Stage</th>
+                    <th className="p-4 font-semibold">Score</th>
+                    <th className="p-4 font-semibold">Findings</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1c2b42] text-slate-300">
+                <tbody className="divide-y divide-[var(--border)] text-[var(--text-secondary)]">
                   {scans.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-slate-500">
+                      <td colSpan={5} className="p-8 text-center text-[var(--text-muted)]">
                         No scans recorded yet.
                       </td>
                     </tr>
                   ) : (
                     scans.map((scan) => (
-                      <tr key={scan.id} className="hover:bg-[#0e192c] transition-colors">
-                        <td className="p-4 font-mono text-xs text-slate-400">
+                      <tr key={scan.id} className="hover:bg-[var(--surface-2)] transition-colors">
+                        <td className="p-4 font-mono text-xs">
                           {new Date(scan.created_at).toLocaleString()}
                         </td>
                         <td className="p-4">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider ${
-                              scan.status === 'COMPLETED'
-                                ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                                : scan.status === 'FAILED'
-                                ? 'bg-rose-950 text-rose-400 border border-rose-800'
-                                : scan.status === 'CANCELLED'
-                                ? 'bg-slate-800 text-slate-400 border border-slate-700'
-                                : 'bg-cyan-950 text-cyan-400 border border-cyan-800'
-                            }`}
-                          >
+                          <Badge variant={scan.status === 'COMPLETED' ? 'success' : scan.status === 'FAILED' ? 'danger' : scan.status === 'CANCELLED' ? 'default' : 'warning'}>
                             {scan.status}
-                          </span>
+                          </Badge>
                         </td>
                         <td className="p-4 font-mono text-xs">{scan.current_stage}</td>
-                        <td className="p-4 font-bold text-white">
-                          {scan.score !== null && scan.score !== undefined ? `${scan.score} / 100` : '—'}
+                        <td className="p-4 font-bold font-mono">
+                          {scan.score !== null && scan.score !== undefined ? `${scan.score}/100` : '—'}
                         </td>
-                        <td className="p-4 text-xs text-slate-400">
+                        <td className="p-4 font-mono text-xs">
                           {scan.summary?.findings_count !== undefined
-                            ? `${scan.summary.findings_count} issues`
+                            ? `${scan.summary.findings_count}`
                             : '—'}
-                        </td>
-                        <td className="p-4 text-right">
-                          {scan.status === 'RUNNING' && (
-                            <button
-                              onClick={() => void handleCancelScan(scan.id)}
-                              className="text-xs text-rose-400 hover:underline font-semibold cursor-pointer"
-                            >
-                              Cancel
-                            </button>
-                          )}
                         </td>
                       </tr>
                     ))
@@ -622,12 +557,12 @@ export function WebsiteDetailPage() {
             </div>
           </div>
         </section>
+      )}
 
-        {/* Finding Detail Modal */}
-        <FindingDetailModal
-          finding={selectedFinding}
-          onClose={() => setSelectedFinding(null)}
-        />
-      </main>
+      <FindingDetailModal
+        finding={selectedFinding}
+        onClose={() => setSelectedFinding(null)}
+      />
+    </main>
   )
 }

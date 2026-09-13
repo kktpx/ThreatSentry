@@ -16,10 +16,10 @@ vi.mock('../../lib/supabase', () => ({
 it('renders email-password login controls', () => {
   render(<MemoryRouter><LoginPage /></MemoryRouter>)
 
-  expect(screen.getByRole('heading', { name: 'Sign in to ThreatSentry' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Welcome back' })).toBeInTheDocument()
   expect(screen.getByLabelText('Email')).toBeInTheDocument()
   expect(screen.getByLabelText('Password')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Create an account' })).toHaveAttribute('href', '/register')
+  expect(screen.getByRole('link', { name: 'Sign up' })).toHaveAttribute('href', '/register')
 })
 
 it('signs in with the submitted credentials', async () => {
@@ -36,7 +36,7 @@ it('signs in with the submitted credentials', async () => {
 
   await user.type(screen.getByLabelText('Email'), 'analyst@example.com')
   await user.type(screen.getByLabelText('Password'), 'secure-password')
-  await user.click(screen.getByRole('button', { name: 'Sign in' }))
+  await user.click(screen.getByRole('button', { name: /Sign In/i }))
 
   expect(signInWithPassword).toHaveBeenCalledWith({
     email: 'analyst@example.com',

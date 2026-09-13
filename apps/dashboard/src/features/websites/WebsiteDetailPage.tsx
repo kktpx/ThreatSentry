@@ -323,7 +323,7 @@ export function WebsiteDetailPage() {
           <p className="text-sm text-[var(--text-secondary)] mb-4">
             Active scanning is disabled until you prove ownership of this target by publishing a verification token.
           </p>
-          <div className="bg-[var(--surface-2)] p-4 rounded border border-[var(--border)] font-mono text-xs">
+          <div className="bg-[var(--surface-2)] p-4 rounded border border-[var(--border)] font-mono text-xs mb-4">
             <div className="mb-2">
               <span className="text-[var(--text-muted)] inline-block w-20">Path:</span>
               <span className="text-[var(--accent)]">{website.normalized_origin}/.well-known/threatsentry.txt</span>
@@ -332,6 +332,21 @@ export function WebsiteDetailPage() {
               <span className="text-[var(--text-muted)] inline-block w-20">Content:</span>
               <span className="text-[var(--warning)]">threatsentry-verification={website.verification_token}</span>
             </div>
+          </div>
+          
+          <div className="text-xs text-[var(--text-muted)] bg-[var(--surface-2)] p-4 rounded border border-[var(--border)] leading-relaxed space-y-2 mb-4">
+            <p><strong>Tip:</strong> Create a folder named <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">.well-known</code> in your web server's public root directory (e.g., <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">public/</code>, <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">htdocs/</code>, or <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">var/www/html/</code>). Then, create the <code className="bg-[var(--bg)] border border-[var(--border)] px-1 py-0.5 rounded font-mono text-[11px] text-[var(--text)]">threatsentry.txt</code> file inside it.</p>
+          </div>
+
+          <div className="text-xs text-[var(--text-muted)] bg-[var(--surface-2)] p-4 rounded border border-[var(--border)] leading-relaxed space-y-2">
+            <span className="font-semibold uppercase text-[var(--text-secondary)] block mb-1.5">Deploy or Push to your server:</span>
+            <p>If you are using Git (like Vercel, Netlify, GitHub Pages), commit and push the file:</p>
+            <code className="block bg-[var(--bg)] p-2 rounded border border-[var(--border)] font-mono text-[11px] text-[var(--accent)]">
+              git add public/.well-known/threatsentry.txt<br/>
+              git commit -m "Add verification file"<br/>
+              git push
+            </code>
+            <p>Wait for your deployment to finish before clicking <strong>Verify Target</strong> above.</p>
           </div>
         </div>
       )}

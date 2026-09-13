@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router'
 
+import { ScrollToTop } from './components/ScrollToTop'
 import { LandingPage } from './features/landing/LandingPage'
 import { LoginPage } from './features/auth/LoginPage'
 import { RegisterPage } from './features/auth/RegisterPage'
@@ -12,6 +13,7 @@ import { ModelPage } from './features/model/ModelPage'
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/websites/new" element={<ProtectedRoute><AddWebsitePage /></ProtectedRoute>} />

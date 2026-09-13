@@ -216,6 +216,21 @@ export function AddWebsitePage() {
                     </button>
                   </div>
                 </div>
+
+                <div>
+                  <span className="text-[11px] font-semibold uppercase text-[var(--text-secondary)] block mb-1.5">
+                    3. Deploy or Push to your server:
+                  </span>
+                  <div className="text-xs text-[var(--text-muted)] bg-[var(--surface-2)] p-3 rounded-lg border border-[var(--border)] leading-relaxed space-y-2">
+                    <p>If you are using Git (like Vercel, Netlify, GitHub Pages), commit and push the file:</p>
+                    <code className="block bg-[var(--bg)] p-2 rounded border border-[var(--border)] font-mono text-[11px] text-[var(--accent)]">
+                      git add public/.well-known/threatsentry.txt<br/>
+                      git commit -m "Add verification file"<br/>
+                      git push
+                    </code>
+                    <p>Wait for your deployment to finish before clicking Verify Ownership.</p>
+                  </div>
+                </div>
               </div>
 
               <div className="pt-2">
